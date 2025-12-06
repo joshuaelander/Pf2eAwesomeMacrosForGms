@@ -1,4 +1,4 @@
-export const QUICK_RECALL_MACRO_NAME = "PF2e Random Encounter";
+export const QUICK_RECALL_MACRO_NAME = "PF2e Quick Recall Knowledge";
 export const QUICK_RECALL_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-recall-knowledge.png"
 
 
@@ -214,7 +214,7 @@ function calculateDegreeOfSuccess(total, dc) {
  * Open the Recall Knowledge dialog.
  * Note: Actor selection is driven by controlled tokens. If none are selected, checks will be run for the whole party.
  */
-function openRecallKnowledgeDialog() {
+export function openRecallKnowledgeDialog() {
     // Static PF2e skill map (adjust if you need additional skills)
     const skills = {
         'arcana': 'Arcana',

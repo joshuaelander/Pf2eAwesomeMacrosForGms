@@ -17,7 +17,7 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 // Note: To set a custom icon for the macro, update MACRO_ICON inside 'random_encounter_macro.js'
 // Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
-import { generateEncounter, MACRO_NAME, MACRO_ICON } from './quick-recall-knowledge.js';
+import { generateEncounter, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -92,10 +92,11 @@ async function createMacroDocument(name, icon, command, folderId) {
 
 Hooks.once('ready', async () => {
     // 1. Define a global namespace for module functions
-    game.pf2eCustomMacros = game.pf2eCustomMacros || {};
+    game.pf2eAwedomeMacros = game.pf2eAwedomeMacros || {};
 
     // 2. Register Global Functions 
-    game.pf2eCustomMacros.generateEncounter = generateEncounter;
+    game.pf2eAwedomeMacros.generateEncounter = generateEncounter;
+    game.pf2eAwedomeMacros.openRecallKnowledgeDialog = openRecallKnowledgeDialog;
 
     // 3. Get or Create the Target Folder
     let targetFolderId = null;
@@ -110,14 +111,14 @@ Hooks.once('ready', async () => {
     createMacroDocument(
         RANDOM_ENCOUNTER_MACRO_NAME,
         RANDOM_ENCOUNTER_MACRO_ICON,
-        `game.pf2eCustomMacros.generateEncounter();`,
+        `game.pf2eAwedomeMacros.generateEncounter();`,
         targetFolderId
     );
 
     createMacroDocument(
-        'New Utility Macro', 
-        'icons/svg/heal.svg', 
-        `game.pf2eCustomMacros.newFunction();`,
+        QUICK_RECALL_MACRO_NAME, 
+        QUICK_RECALL_MACRO_ICON, 
+        `game.pf2eAwedomeMacros.openRecallKnowledgeDialog();`,
         targetFolderId
     );
 
