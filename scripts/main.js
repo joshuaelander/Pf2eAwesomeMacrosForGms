@@ -17,7 +17,7 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 // Note: To set a custom icon for the macro, update MACRO_ICON inside 'random_encounter_macro.js'
 // Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
-import { generateEncounter, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
+import { openRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
