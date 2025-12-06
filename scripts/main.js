@@ -19,7 +19,8 @@ import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_
 import { openRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
 import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
-import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_ICON } from './quick-token-resizer.js'; }
+import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_ICON } from './quick-token-resizer.js';
+import { cleanupCombat, COMBAT_CLEANUP_MACRO_NAME, COMBAT_CLEANUP_MACRO_ICON } from './quick-combat-cleanup.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -102,6 +103,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwedomeMacros.openJournalExportDialog = openJournalExportDialog;
     game.pf2eAwedomeMacros.openFullRestoreDialog = openFullRestoreDialog;
     game.pf2eAwedomeMacros.resizeToken = resizeToken;
+    game.pf2eAwedomeMacros.cleanupCombat = cleanupCombat;
 
     // 3. Get or Create the Target Folder
     let targetFolderId = null;
@@ -145,6 +147,13 @@ Hooks.once('ready', async () => {
         QUICK_TOKEN_RESIZER_MACRO_NAME,
         QUICK_TOKEN_RESIZER_MACRO_ICON,
         `game.pf2eAwedomeMacros.resizeToken();`,
+        targetFolderId
+    );
+
+    createMacroDocument(
+        COMBAT_CLEANUP_MACRO_NAME,
+        COMBAT_CLEANUP_MACRO_ICON,
+        `game.pf2eAwedomeMacros.cleanupCombat();`,
         targetFolderId
     );
 
