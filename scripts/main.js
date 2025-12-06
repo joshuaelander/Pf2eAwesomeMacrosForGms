@@ -18,6 +18,7 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 // Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
 import { openRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
+import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -97,6 +98,7 @@ Hooks.once('ready', async () => {
     // 2. Register Global Functions 
     game.pf2eAwedomeMacros.generateEncounter = generateEncounter;
     game.pf2eAwedomeMacros.openRecallKnowledgeDialog = openRecallKnowledgeDialog;
+    game.pf2eAwedomeMacros.openJournalExportDialog = openJournalExportDialog;
 
     // 3. Get or Create the Target Folder
     let targetFolderId = null;
@@ -119,6 +121,13 @@ Hooks.once('ready', async () => {
         QUICK_RECALL_MACRO_NAME, 
         QUICK_RECALL_MACRO_ICON, 
         `game.pf2eAwedomeMacros.openRecallKnowledgeDialog();`,
+        targetFolderId
+    );
+
+    createMacroDocument(
+        JOURNAL_EXPORT_MACRO_NAME,
+        JOURNAL_EXPORT_MACRO_ICON,
+        `game.pf2eAwedomeMacros.openJournalExportDialog();`,
         targetFolderId
     );
 

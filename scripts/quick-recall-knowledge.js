@@ -1,4 +1,4 @@
-export const QUICK_RECALL_MACRO_NAME = "PF2e Quick Recall Knowledge";
+export const QUICK_RECALL_MACRO_NAME = "Quick Recall Knowledge";
 export const QUICK_RECALL_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-recall-knowledge.png"
 
 
