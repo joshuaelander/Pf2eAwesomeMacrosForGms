@@ -5,7 +5,7 @@
  */
 
 export const SCENE_FOLDER_NAME = "Random Encounters";
-export const RANDOM_ENCOUNTER_MACRO_NAME = "PF2e Random Encounter";
+export const RANDOM_ENCOUNTER_MACRO_NAME = "Create Random Encounter";
 export const RANDOM_ENCOUNTER_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/random-encounter-icon.png"; // Icon url e.g. "icons/svg/d20.svg" 
 
 /**
