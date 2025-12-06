@@ -1,28 +1,6 @@
 export const QUICK_RECALL_MACRO_NAME = "Quick Recall Knowledge";
 export const QUICK_RECALL_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-recall-knowledge.png"
 
-
-async function createRecallKnowledgeMacro() {
-    try {
-        if (!game.user.isGM) return; // Only GMs create macros by default
-        const existingMacro = game.macros.find(m => m.name === 'Recall Knowledge' && m.command?.includes('game.recallKnowledge.openDialog'));
-        if (existingMacro) return;
-
-        await Macro.create({
-            name: 'Quick Recall Knowledge',
-            type: 'script',
-            img: 'icons/skills/trades/academics-study-reading-book.webp',
-            command: 'game.recallKnowledge.openDialog();',
-            folder: null,
-            flags: {}
-        });
-
-        console.log('Recall Knowledge | Macro created');
-    } catch (err) {
-        console.warn('Recall Knowledge | Failed to create macro:', err);
-    }
-}
-
 /**
  * Create the secret aggregated chat message for multiple recall knowledge checks.
  * Whispered to all GMs (GM-only).

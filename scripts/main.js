@@ -3,7 +3,6 @@
  * This script runs once on the Foundry VTT 'ready' hook.
  * It serves as the module's entry point, handling imports, global registration, 
  * and programmatically creating macro documents for user convenience.
- * * This file is referenced by the "scripts" array in module.json.
  */
 
 // --- 1. CONFIGURATION AND IMPORT MACRO LOGIC FILES ---
@@ -19,6 +18,7 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
 import { openRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
+import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -99,6 +99,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwedomeMacros.generateEncounter = generateEncounter;
     game.pf2eAwedomeMacros.openRecallKnowledgeDialog = openRecallKnowledgeDialog;
     game.pf2eAwedomeMacros.openJournalExportDialog = openJournalExportDialog;
+    game.pf2eAwedomeMacros.openFullRestoreDialog = openFullRestoreDialog;
 
     // 3. Get or Create the Target Folder
     let targetFolderId = null;
@@ -128,6 +129,13 @@ Hooks.once('ready', async () => {
         JOURNAL_EXPORT_MACRO_NAME,
         JOURNAL_EXPORT_MACRO_ICON,
         `game.pf2eAwedomeMacros.openJournalExportDialog();`,
+        targetFolderId
+    );
+
+    createMacroDocument(
+        FULL_RESTORE_MACRO_NAME,
+        FULL_RESTORE_MACRO_ICON,
+        `game.pf2eAwedomeMacros.openFullRestoreDialog();`,
         targetFolderId
     );
 
