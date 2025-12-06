@@ -1,0 +1,25 @@
+{
+	"id": "pf2e-awesome-macros-for-gms",
+	"title": "PF2e Awesome Macros for GMs",
+	"version": "1.0.5",
+	"compatibility": {
+		"minimum": "13",
+		"verified": "13.348"
+	},
+	"systems": [ "pf2e" ],
+	"url": "https://github.com/joshuaelander/RecallKnowledgePf2e",
+	"manifest": "https://raw.githubusercontent.com/joshuaelander/RecallKnowledgePf2e/main/module.json",
+	"download": "https://github.com/joshuaelander/RecallKnowledgePf2e/archive/refs/heads/main.zip",
+	"esmodules": [
+		"scripts/main.js"
+	],
+	"styles": [
+		"styles/recall-knowledge.css"
+	],
+	"authors": [
+		{
+			"name": "Joshua Elander"
+		}
+	],
+	"description": "Quick Recall Knowledge checks with secret rolls for PF2e GMs"
+}
