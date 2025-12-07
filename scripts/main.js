@@ -21,7 +21,9 @@ import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACR
 import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
 import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_ICON } from './quick-token-resizer.js';
 import { cleanupCombat, COMBAT_CLEANUP_MACRO_NAME, COMBAT_CLEANUP_MACRO_ICON } from './quick-combat-cleanup.js';
-import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MODIFIER_MACRO_ICON } from './initiative-modifier.js'; }
+import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MODIFIER_MACRO_ICON } from './initiative-modifier.js';
+import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } from './award-xp.js';
+import { addStatusEffect, STATUS_EFFECT_MACRO_NAME, STATUS_EFFECT_MACRO_ICON } from './easy-add-conditions.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -106,6 +108,8 @@ Hooks.once('ready', async () => {
     game.pf2eAwedomeMacros.resizeToken = resizeToken;
     game.pf2eAwedomeMacros.cleanupCombat = cleanupCombat;
     game.pf2eAwedomeMacros.applyInitiativeModifier = applyInitiativeModifier;
+    game.pf2eAwedomeMacros.awardXP = awardXP;
+    game.pf2eAwedomeMacros.addStatusEffect = addStatusEffect;
 
     // 3. Get or Create the Target Folder
     let targetFolderId = null;
@@ -165,6 +169,20 @@ Hooks.once('ready', async () => {
         `game.pf2eAwedomeMacros.applyInitiativeModifier();`,
         targetFolderId
     );
+
+    createMacroDocument(
+        EXPERIENCE_AWARD_MACRO_NAME,
+        EXPERIENCE_AWARD_MACRO_ICON,
+        `game.pf2eAwedomeMacros.awardXP();`,
+        targetFolderId
+    );
+
+    createMacroDocument(
+        STATUS_EFFECT_MACRO_NAME,
+        STATUS_EFFECT_MACRO_ICON,
+        `game.pf2eAwedomeMacros.addStatusEffect();`,
+        targetFolderId
+    );        
 
     console.log('PF2e Awesome Macros | All module logic and macros initialized.');
 });
