@@ -10,4 +10,4 @@ If you'd like you can help support me over on Patreon to see this and many other
 Linked here: https://patreon.com/AeneasPF2e
 
 Author: Aeneas (Joshua Elander)
-Disclaimer: All code here is the works of and belongs to the author belongs to him. You are free to use it by importing it from foundry vtt for PF2e. But if you wish to fork or use it for your own code, please get permission to use this code first. 
+Disclaimer: All code here is the work of and belongs to the author. You are free to use it by importing it from foundry vtt and used with PF2e. But if you wish to fork or use it for your own code, please get permission to use this code first. 
