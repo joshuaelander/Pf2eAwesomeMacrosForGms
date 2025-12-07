@@ -7,7 +7,7 @@ Contents:
 - Many more to come!
 
 If you'd like you can help support me over on Patreon to see this and many other fun tools, maps, etc related to PF2e.
-Linked here: https://www.patreon.com/posts/ultimate-pf2e-145271921?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link
+Linked here: https://patreon.com/AeneasPF2e?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink
 
 Author: Aeneas (Joshua Elander)
 Disclaimer: All code here is the works of and belongs to the author belongs to him. You are free to use it by importing it from foundry vtt for PF2e. But if you wish to fork or use it for your own code, please get permission to use this code first. 
