@@ -29,9 +29,20 @@ function runJournalExport(folderId) {
     if (folderId === "all") {
         journalsToExport = allJournals;
     } else {
-        journalsToExport = allJournals.filter(j => j.folder?.id === folderId);
         const selectedFolder = game.folders.get(folderId);
-        exportTitle = selectedFolder ? selectedFolder.name : "Filtered Journals";
+        if (!selectedFolder) {
+            ui.notifications.error("Could not find the selected folder.");
+            return;
+        }
+
+        // Create a set of folder IDs including the selected one and all its descendants
+        const descendantFolderIds = new Set(selectedFolder.tree.map(f => f.id));
+        descendantFolderIds.add(folderId);
+
+        // Filter journals: keep if the journal's folder ID is in the set of descendant IDs
+        journalsToExport = allJournals.filter(j => j.folder && descendantFolderIds.has(j.folder.id));
+
+        exportTitle = selectedFolder.name;
     }
 
     if (journalsToExport.length === 0) {
@@ -47,7 +58,7 @@ function runJournalExport(folderId) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Foundry VTT Journal Export: ${exportTitle}</title>
+    <title>${exportTitle}</title>
     <style>
         body { font-family: sans-serif; margin: 40px; }
         .toc-section { margin-bottom: 40px; border-bottom: 1px solid #ddd; padding-bottom: 20px; page-break-after: always; }
@@ -65,7 +76,7 @@ function runJournalExport(folderId) {
     </style>
 </head>
 <body>
-    <h1>Foundry VTT Journal Export: ${exportTitle}</h1>`;
+    <h1>${exportTitle}</h1>`;
 
     for (const journal of journalsToExport) {
         const entryName = journal.name || 'Untitled Journal Entry';
