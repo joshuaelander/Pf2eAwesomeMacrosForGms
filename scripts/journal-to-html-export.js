@@ -26,33 +26,44 @@ function runJournalExport(folderId) {
     let journalsToExport = [];
     let exportTitle = "All Journals";
 
+    const collectSortedJournals = (parentId) => {
+        // 1. Get folders that are children of this parentId
+        // (If parentId is null, we look for root folders)
+        const childFolders = game.folders
+            .filter(f => f.type === "JournalEntry" && f.folder?.id === parentId)
+            .sort((a, b) => a.sort - b.sort);
+
+        // 2. Get journals that are inside this specific folder
+        // (If parentId is null, we look for root journals)
+        const childJournals = allJournals
+            .filter(j => j.folder?.id === parentId)
+            .sort((a, b) => a.sort - b.sort);
+
+        // 3. Add journals to the list (Journals usually appear before subfolders in export logic)
+        journalsToExport.push(...childJournals);
+
+        // 4. Recursively process each subfolder
+        for (const folder of childFolders) {
+            collectSortedJournals(folder.id);
+        }
+    };
+
     if (folderId === "all") {
-        journalsToExport = allJournals;
+        // Start at the root (null) to get everything
+        collectSortedJournals(null);
+        // Note: The recursive function handles filtering game.folders, 
+        // but we need to ensure we grab root journals (j.folder === null) inside the function.
+        // The logic `f.folder?.id === parentId` works for null if parentId is null!
     } else {
         const selectedFolder = game.folders.get(folderId);
         if (!selectedFolder) {
             ui.notifications.error("Could not find the selected folder.");
             return;
         }
-
-        // Define a helper to find all subfolder IDs recursively
-        const getAllSubfolderIds = (rootId) => {
-            // Find all folders that have 'rootId' as their parent
-            const children = game.folders.filter(f => f.folder?.id === rootId);
-            let ids = [rootId];
-            children.forEach(child => {
-                ids = ids.concat(getAllSubfolderIds(child.id));
-            });
-            return ids;
-        };
-
-        // Get the list of all relevant folder IDs (parent + children)
-        const targetFolderIds = new Set(getAllSubfolderIds(folderId));
-
-        // Filter journals based on that list
-        journalsToExport = allJournals.filter(j => j.folder && targetFolderIds.has(j.folder.id));
-
         exportTitle = selectedFolder.name;
+
+        // Start the recursion from the selected folder
+        collectSortedJournals(folderId);
     }
 
     if (journalsToExport.length === 0) {
