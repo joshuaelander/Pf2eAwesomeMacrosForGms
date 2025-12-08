@@ -172,13 +172,29 @@ export function openJournalExportDialog() {
     // Get all folders from the 'JournalEntry' document type
     const journalFolders = game.folders.filter(f => f.type === "JournalEntry");
 
-    // Build the <select> HTML dropdown options
-    let folderOptions = '<option value="all">-- All Journals --</option>';
-    journalFolders.forEach(folder => {
-        // Add spaces for folder hierarchy if possible, otherwise just the name
-        const indent = "&nbsp;&nbsp;".repeat(folder.depth || 0);
-        folderOptions += `<option value="${folder.id}">${indent}${folder.name}</option>`;
-    });
+    // Recursive function to build the sorted and indented HTML options
+    const buildFolderOptions = (parentId, depth = 0) => {
+        let options = '';
+        const indent = "&nbsp;&nbsp;".repeat(depth * 2); // Indent subfolders
+
+        // Filter folders that are children of parentId and sort them by their 'sort' key
+        const children = journalFolders
+            .filter(f => f.folder?.id === parentId)
+            .sort((a, b) => a.sort - b.sort);
+
+        for (const folder of children) {
+            // Add the current folder as an option
+            options += `<option value="${folder.id}">${indent}${folder.name}</option>`;
+
+            // Recursively add the subfolders
+            options += buildFolderOptions(folder.id, depth + 1);
+        }
+        return options;
+    };
+
+    // Build the final <select> content starting from the root folders (parentId = null)
+    let folderOptions = '<option value="all">-- All Journals (Including Folders) --</option>';
+    folderOptions += buildFolderOptions(null);
 
     // Define the dialog content
     const dialogContent = `
