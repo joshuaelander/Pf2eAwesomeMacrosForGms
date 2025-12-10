@@ -110,6 +110,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwedomeMacros.applyInitiativeModifier = applyInitiativeModifier;
     game.pf2eAwedomeMacros.awardXP = awardXP;
     game.pf2eAwedomeMacros.addStatusEffect = addStatusEffect;
+    game.pf2eAwedomeMacros.addExplorationActivity = addExplorationActivity;
 
     // Get or Create the Target Folder
     let targetFolderId = null;
