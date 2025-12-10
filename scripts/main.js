@@ -24,6 +24,7 @@ import { cleanupCombat, COMBAT_CLEANUP_MACRO_NAME, COMBAT_CLEANUP_MACRO_ICON } f
 import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MODIFIER_MACRO_ICON } from './apply-initiative-modifier.js';
 import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } from './award-xp.js';
 import { addStatusEffect, STATUS_EFFECT_MACRO_NAME, STATUS_EFFECT_MACRO_ICON } from './easy-add-conditions.js';
+import { addExplorationActivity, EXPLORATION_ACTIVITY_MACRO_NAME, EXPLORATION_ACTIVITY_MACRO_ICON } from './easy-exploration.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -95,12 +96,11 @@ async function createMacroDocument(name, icon, command, folderId) {
 
 
 // --- 3. HOOKS AND INITIALIZATION ---
-
 Hooks.once('ready', async () => {
-    // 1. Define a global namespace for module functions
+    // Define a global namespace for module functions
     game.pf2eAwedomeMacros = game.pf2eAwedomeMacros || {};
 
-    // 2. Register Global Functions 
+    // Register Global Functions 
     game.pf2eAwedomeMacros.generateEncounter = generateEncounter;
     game.pf2eAwedomeMacros.openRecallKnowledgeDialog = openRecallKnowledgeDialog;
     game.pf2eAwedomeMacros.openJournalExportDialog = openJournalExportDialog;
@@ -111,7 +111,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwedomeMacros.awardXP = awardXP;
     game.pf2eAwedomeMacros.addStatusEffect = addStatusEffect;
 
-    // 3. Get or Create the Target Folder
+    // Get or Create the Target Folder
     let targetFolderId = null;
     if (game.user.isGM) {
         const folder = await getOrCreateFolder(MACRO_FOLDER_NAME, 'Macro');
@@ -120,7 +120,7 @@ Hooks.once('ready', async () => {
         }
     }
 
-    // 4. Programmatically create the macro buttons 
+    // Programmatically create the macro buttons 
     createMacroDocument(
         RANDOM_ENCOUNTER_MACRO_NAME,
         RANDOM_ENCOUNTER_MACRO_ICON,
@@ -182,7 +182,14 @@ Hooks.once('ready', async () => {
         STATUS_EFFECT_MACRO_ICON,
         `game.pf2eAwedomeMacros.addStatusEffect();`,
         targetFolderId
-    );        
+    );
+
+    createMacroDocument(
+        EXPLORATION_ACTIVITY_MACRO_NAME,
+        EXPLORATION_ACTIVITY_MACRO_ICON,
+        `game.pf2eAwedomeMacros.addExplorationActivity();`,
+        targetFolderId
+    );
 
     console.log('PF2e Awesome Macros | All module logic and macros initialized.');
 });

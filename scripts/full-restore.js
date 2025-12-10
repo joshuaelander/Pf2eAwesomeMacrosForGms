@@ -1,6 +1,3 @@
-export const FULL_RESTORE_MACRO_NAME = "Full Restore";
-export const FULL_RESTORE_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/full-restore.png"
-
 /**
  * PF2e Party Rest & Reset
  * * A macro to reset HP, remove Wounded/Fatigued conditions, reset Hero Points, 
@@ -14,6 +11,9 @@ export const FULL_RESTORE_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/asse
  * * Notes:
  * - Skips actors with the "Dead" condition.
  */
+
+export const FULL_RESTORE_MACRO_NAME = "Full Restore";
+export const FULL_RESTORE_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/full-restore.png"
 
 // --- DIALOG POPULATION AND LAUNCH ---
 export function openFullRestoreDialog() {

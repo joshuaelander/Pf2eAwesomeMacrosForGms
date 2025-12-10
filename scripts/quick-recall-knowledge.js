@@ -1,3 +1,9 @@
+/*
+* Quick Recall Knowledge Macro for PF2e
+* This macro allows GMs to perform Recall Knowledge checks for multiple actors
+* (either selected tokens or the whole party) against a specified DC and skill.
+*/
+
 export const QUICK_RECALL_MACRO_NAME = "Quick Recall Knowledge";
 export const QUICK_RECALL_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-recall-knowledge.png"
 

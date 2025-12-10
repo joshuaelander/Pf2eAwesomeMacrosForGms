@@ -1,3 +1,12 @@
+/*
+    * Journal to HTML Export Macro
+    * Exports journal entries to a clean HTML file, preserving formatting
+    * while removing images and compendium links.
+    * Allows selection of specific journal folders or exporting all journals.
+    * Generates a Table of Contents with links to each journal entry.
+    * Intended for GMs using the PF2e system on Foundry V10+.
+ */
+
 export const JOURNAL_EXPORT_MACRO_NAME = "Export Journals";
 export const JOURNAL_EXPORT_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/journal-to-html-export.png"
 
