@@ -12,75 +12,76 @@
 const EXPLORATION_ACTIVITY_MACRO_NAME = "Easy Exploration";
 const EXPLORATION_ACTIVITY_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/easy-exploration.png";
 
-const tokens = canvas.tokens.controlled;
+export async function addExplorationActivity() {
+    const tokens = canvas.tokens.controlled;
 
-if (tokens.length === 0) {
-    ui.notifications.warn("Please select a token first.");
-} else if (tokens.length > 1) {
-    ui.notifications.warn("Please select only one token.");
-} else {
-    const token = tokens[0];
-    const actor = token.actor;
-
-    if (!actor || actor.type !== "character") {
-        ui.notifications.warn("This macro only works on Player Character actors.");
+    if (tokens.length === 0) {
+        ui.notifications.warn("Please select a token first.");
+    } else if (tokens.length > 1) {
+        ui.notifications.warn("Please select only one token.");
     } else {
-        manageExploration(token, actor);
-    }
-}
+        const token = tokens[0];
+        const actor = token.actor;
 
-async function manageExploration(token, actor) {
-    const pack = game.packs.get("pf2e.actionspf2e");
-    if (!pack) {
-        ui.notifications.error("Could not find compendium 'pf2e.actionspf2e'.");
-        return;
-    }
-
-    // 1. Get Compendium Index
-    const index = await pack.getIndex({ fields: ["name", "img", "system.traits"] });
-
-    // 2. Prepare Options
-    // We store the Compendium UUID for everything initially. 
-    // We will resolve it to a Local ID in the setExploration function.
-    let standardOptions = [];
-    let characterOptions = [];
-
-    // Filter Compendium for 'exploration' trait
-    for (const entry of index) {
-        const traits = entry.system?.traits?.value || [];
-        if (traits.includes("exploration")) {
-            // Standard Compendium UUID
-            const compendiumUuid = `Compendium.${pack.collection}.Item.${entry._id}`;
-            standardOptions.push({
-                name: entry.name,
-                uuid: compendiumUuid,
-                img: entry.img
-            });
+        if (!actor || actor.type !== "character") {
+            ui.notifications.warn("This macro only works on Player Character actors.");
+        } else {
+            manageExploration(token, actor);
         }
     }
-    standardOptions.sort((a, b) => a.name.localeCompare(b.name));
 
-    // Filter Actor Items for 'exploration' trait
-    // These are items the actor DEFINITELY has.
-    const explorationItems = [
-        ...actor.itemTypes.action,
-        ...actor.itemTypes.feat
-    ].filter(i => i.system.traits.value.includes("exploration"));
+    async function manageExploration(token, actor) {
+        const pack = game.packs.get("pf2e.actionspf2e");
+        if (!pack) {
+            ui.notifications.error("Could not find compendium 'pf2e.actionspf2e'.");
+            return;
+        }
 
-    for (const item of explorationItems) {
-        characterOptions.push({
-            name: item.name,
-            // For these, we specifically want the UUID to point to the Actor's item, 
-            // but for simplicity in the dialog, we can pass the item's ID or UUID.
-            // We'll pass the UUID for consistency.
-            uuid: item.uuid,
-            img: item.img
-        });
-    }
-    characterOptions.sort((a, b) => a.name.localeCompare(b.name));
+        // 1. Get Compendium Index
+        const index = await pack.getIndex({ fields: ["name", "img", "system.traits"] });
 
-    // 3. Build Dialog
-    let content = `
+        // 2. Prepare Options
+        // We store the Compendium UUID for everything initially. 
+        // We will resolve it to a Local ID in the setExploration function.
+        let standardOptions = [];
+        let characterOptions = [];
+
+        // Filter Compendium for 'exploration' trait
+        for (const entry of index) {
+            const traits = entry.system?.traits?.value || [];
+            if (traits.includes("exploration")) {
+                // Standard Compendium UUID
+                const compendiumUuid = `Compendium.${pack.collection}.Item.${entry._id}`;
+                standardOptions.push({
+                    name: entry.name,
+                    uuid: compendiumUuid,
+                    img: entry.img
+                });
+            }
+        }
+        standardOptions.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Filter Actor Items for 'exploration' trait
+        // These are items the actor DEFINITELY has.
+        const explorationItems = [
+            ...actor.itemTypes.action,
+            ...actor.itemTypes.feat
+        ].filter(i => i.system.traits.value.includes("exploration"));
+
+        for (const item of explorationItems) {
+            characterOptions.push({
+                name: item.name,
+                // For these, we specifically want the UUID to point to the Actor's item, 
+                // but for simplicity in the dialog, we can pass the item's ID or UUID.
+                // We'll pass the UUID for consistency.
+                uuid: item.uuid,
+                img: item.img
+            });
+        }
+        characterOptions.sort((a, b) => a.name.localeCompare(b.name));
+
+        // 3. Build Dialog
+        let content = `
     <style>
         .exp-macro-row { display: flex; align-items: center; margin-bottom: 5px; }
         .exp-macro-select { flex: 1; }
@@ -106,71 +107,71 @@ async function manageExploration(token, actor) {
     </div>
     `;
 
-    new Dialog({
-        title: `Exploration: ${token.name}`,
-        content: content,
-        buttons: {
-            ok: {
-                label: "Set Activity",
-                icon: `<i class="fas fa-walking"></i>`,
-                callback: async (html) => {
-                    const selectedUuid = html.find("#exploration-select").val();
-                    const selectedName = html.find("#exploration-select option:selected").text();
+        new Dialog({
+            title: `Exploration: ${token.name}`,
+            content: content,
+            buttons: {
+                ok: {
+                    label: "Set Activity",
+                    icon: `<i class="fas fa-walking"></i>`,
+                    callback: async (html) => {
+                        const selectedUuid = html.find("#exploration-select").val();
+                        const selectedName = html.find("#exploration-select option:selected").text();
 
-                    if (selectedUuid === "CLEAR") {
-                        await clearExploration(actor, token);
-                    } else {
-                        await setExploration(actor, token, selectedUuid, selectedName);
+                        if (selectedUuid === "CLEAR") {
+                            await clearExploration(actor, token);
+                        } else {
+                            await setExploration(actor, token, selectedUuid, selectedName);
+                        }
                     }
-                }
+                },
+                cancel: { label: "Cancel" }
             },
-            cancel: { label: "Cancel" }
-        },
-        default: "ok"
-    }).render(true);
-}
+            default: "ok"
+        }).render(true);
+    }
 
-async function setExploration(actor, token, uuid, name) {
-    try {
-        let finalItemId = "";
+    async function setExploration(actor, token, uuid, name) {
+        try {
+            let finalItemId = "";
 
-        // CHECK: Is this UUID pointing to a Compendium Item?
-        if (uuid.startsWith("Compendium")) {
-            // We need to find if the actor ALREADY has this item to avoid duplicates.
-            // We check matching Source ID (best) or Name (fallback)
-            let existingItem = actor.items.find(i =>
-                i.sourceId === uuid || i.name === name
-            );
+            // CHECK: Is this UUID pointing to a Compendium Item?
+            if (uuid.startsWith("Compendium")) {
+                // We need to find if the actor ALREADY has this item to avoid duplicates.
+                // We check matching Source ID (best) or Name (fallback)
+                let existingItem = actor.items.find(i =>
+                    i.sourceId === uuid || i.name === name
+                );
 
-            if (existingItem) {
-                finalItemId = existingItem.id;
+                if (existingItem) {
+                    finalItemId = existingItem.id;
+                } else {
+                    // IMPORT REQUIRED: Actor doesn't have this activity yet.
+                    ui.notifications.info(`Adding ${name} to ${token.name}'s sheet...`);
+
+                    // Fetch from Compendium
+                    const sourceItem = await fromUuid(uuid);
+                    if (!sourceItem) throw new Error("Could not find item in compendium.");
+
+                    // Create on Actor
+                    const createdItems = await actor.createEmbeddedDocuments("Item", [sourceItem.toObject()]);
+                    finalItemId = createdItems[0].id;
+                }
             } else {
-                // IMPORT REQUIRED: Actor doesn't have this activity yet.
-                ui.notifications.info(`Adding ${name} to ${token.name}'s sheet...`);
-
-                // Fetch from Compendium
-                const sourceItem = await fromUuid(uuid);
-                if (!sourceItem) throw new Error("Could not find item in compendium.");
-
-                // Create on Actor
-                const createdItems = await actor.createEmbeddedDocuments("Item", [sourceItem.toObject()]);
-                finalItemId = createdItems[0].id;
+                // It's already an Actor UUID (Actor.xyz.Item.abc)
+                // We just need the actual Item ID (the last part of the UUID)
+                finalItemId = uuid.split(".").pop();
             }
-        } else {
-            // It's already an Actor UUID (Actor.xyz.Item.abc)
-            // We just need the actual Item ID (the last part of the UUID)
-            finalItemId = uuid.split(".").pop();
-        }
 
-        // CRITICAL STEP: Update the system.exploration array with the LOCAL Item ID
-        await actor.update({
-            "system.exploration": [finalItemId]
-        });
+            // CRITICAL STEP: Update the system.exploration array with the LOCAL Item ID
+            await actor.update({
+                "system.exploration": [finalItemId]
+            });
 
-        // Chat Message
-        ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ token: token }),
-            content: `
+            // Chat Message
+            ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ token: token }),
+                content: `
                 <div style="display: flex; align-items: center;">
                     <div style="margin-right: 10px;">
                         <img src="${token.document.texture.src}" style="width: 40px; height: 40px; border: none; object-fit: cover;" />
@@ -183,24 +184,25 @@ async function setExploration(actor, token, uuid, name) {
                     </div>
                 </div>
             `,
-            flags: { pf2e: { context: { type: "exploration-selection" } } }
+                flags: { pf2e: { context: { type: "exploration-selection" } } }
+            });
+
+            ui.notifications.info(`Set ${token.name}'s exploration to ${name}`);
+
+        } catch (err) {
+            console.error(`Error setting exploration:`, err);
+            ui.notifications.error(`Could not set exploration. Check console.`);
+        }
+    }
+
+    async function clearExploration(actor, token) {
+        await actor.update({
+            "system.exploration": []
         });
 
-        ui.notifications.info(`Set ${token.name}'s exploration to ${name}`);
-
-    } catch (err) {
-        console.error(`Error setting exploration:`, err);
-        ui.notifications.error(`Could not set exploration. Check console.`);
+        ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ token: token }),
+            content: `<strong>${token.name}</strong> has stopped exploration activities.`
+        });
     }
-}
-
-async function clearExploration(actor, token) {
-    await actor.update({
-        "system.exploration": []
-    });
-
-    ChatMessage.create({
-        speaker: ChatMessage.getSpeaker({ token: token }),
-        content: `<strong>${token.name}</strong> has stopped exploration activities.`
-    });
 }
