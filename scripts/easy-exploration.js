@@ -9,8 +9,8 @@
  * 4. Updates actor.system.exploration with the LOCAL Item ID (required for the sheet to work).
  */
 
-const EXPLORATION_ACTIVITY_MACRO_NAME = "Easy Exploration";
-const EXPLORATION_ACTIVITY_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/easy-exploration.png";
+export const EXPLORATION_ACTIVITY_MACRO_NAME = "Easy Exploration";
+export const EXPLORATION_ACTIVITY_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/easy-exploration.png";
 
 export async function addExplorationActivity() {
     const tokens = canvas.tokens.controlled;
