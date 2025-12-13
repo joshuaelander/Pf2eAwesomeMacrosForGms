@@ -14,7 +14,7 @@ const SIZE_DIMENSIONS = {
     "med": 1,
     "lg": 2,
     "huge": 3,
-    "grg": 4,
+    "grg": 4, // Gargantuan included for completeness
 };
 
 /**
@@ -104,24 +104,34 @@ export async function resizeToken() {
                 callback: (html) => {
                     const selectedSizeKey = html.find('#token-size').val();
                     let newGridSize;
+                    let shouldLinkSize = false;
 
                     if (selectedSizeKey === "reset") {
                         newGridSize = defaultGridSize;
+                        shouldLinkSize = true; // Re-enable link if resetting
                     } else {
                         newGridSize = SIZE_DIMENSIONS[selectedSizeKey];
+                        shouldLinkSize = false; // Disable link for custom sizes
                     }
 
                     if (newGridSize === undefined) {
                         return ui.notifications.error(`Invalid size setting detected.`);
                     }
 
-                    // Perform the update
-                    token.document.update({
+                    // *** CRITICAL UPDATE: Ensure size change persists ***
+                    // We set the new dimensions and explicitly toggle the 'flags.pf2e.linkToActorSize' flag.
+                    // If this flag is true, PF2e will auto-revert the size on update.
+                    // If false, it respects our custom dimensions.
+                    const updateData = {
                         width: newGridSize,
-                        height: newGridSize
-                    });
+                        height: newGridSize,
+                        "flags.pf2e.linkToActorSize": shouldLinkSize
+                    };
 
-                    ui.notifications.info(`Resized ${token.name} to ${newGridSize}x${newGridSize} grid units.`);
+                    // Perform the update
+                    token.document.update(updateData);
+
+                    ui.notifications.info(`Resized ${token.name} to ${newGridSize}x${newGridSize}. Size Link: ${shouldLinkSize ? 'ON' : 'OFF'}.`);
                 }
             },
             cancel: {
