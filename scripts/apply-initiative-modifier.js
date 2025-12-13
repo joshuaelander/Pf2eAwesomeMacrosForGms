@@ -10,7 +10,7 @@ export const INITIATIVE_MODIFIER_MACRO_ICON = "modules/pf2e-awesome-macros-for-g
 export async function applyInitiativeModifier() {
     const macroName = INITIATIVE_MODIFIER_MACRO_NAME;
 
-    // 1. Determine the target actors
+    // Determine the target actors
     let targets = canvas.tokens.controlled.map(t => t.actor);
 
     if (targets.length === 0) {
@@ -59,7 +59,7 @@ export async function applyInitiativeModifier() {
         return;
     }
 
-    // 2. Prepare dialog content
+    // Prepare dialog content
     const targetNames = targets.map(a => `<li>${a.name}</li>`).join("");
     const dialogContent = `
     <p>Apply an Initiative Modifier to the following combatants:</p>
@@ -68,12 +68,12 @@ export async function applyInitiativeModifier() {
     </ul>
     <div class="form-group" style="margin-top: 10px;">
         <label for="modifier">Modifier (e.g., +5, -2):</label>
-        <input type="number" id="modifier" name="modifier" value="0" autofocus style="width: 100%; padding: 5px;">
+        <input type="number" id="modifier" name="modifier" value="" autofocus style="width: 100%; padding: 5px;">
     </div>
     <p><em>The initiative for each target will be updated by this amount.</em></p>
 `;
 
-    // 3. Display the dialog
+    // Display the dialog
     new Dialog({
         title: macroName,
         content: dialogContent,
@@ -110,11 +110,11 @@ export async function applyInitiativeModifier() {
                         }
                     });
 
-                    // 4. Update Combatant Initiatives
+                    // Update Combatant Initiatives
                     if (updates.length > 0) {
                         combat.updateEmbeddedDocuments("Combatant", updates)
                             .then(() => {
-                                // 5. Post private GM chat message
+                                // Post private GM chat message
                                 const chatContent = `
                                 <h3>${macroName} - Initiative Updated</h3>
                                 <p>Applied a modifier of <strong>${modifier >= 0 ? '+' : ''}${modifier}</strong> to the following combatants:</p>

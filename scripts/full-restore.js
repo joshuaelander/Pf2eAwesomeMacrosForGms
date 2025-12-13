@@ -173,7 +173,7 @@ async function executeRest(html, actorsToUpdate) {
         if (doSpells) {
             let spellChanges = [];
 
-            // 1. Reset Focus Points
+            // Reset Focus Points
             if (actor.system.resources?.focus) {
                 const currentFocus = actor.system.resources.focus.value;
                 const maxFocus = actor.system.resources.focus.max;
@@ -183,7 +183,7 @@ async function executeRest(html, actorsToUpdate) {
                 }
             }
 
-            // 2. Reset Spell Slots (requires updating the Embedded Items)
+            // Reset Spell Slots (requires updating the Embedded Items)
             const spellcastingEntries = actor.itemTypes.spellcastingEntry;
             for (const entry of spellcastingEntries) {
                 // We only care about entries that use slots (not wands/scrolls usually)

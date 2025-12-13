@@ -19,7 +19,7 @@ export async function cleanupCombat() {
         return;
     }
 
-    // 1. Identify defeated enemies (NPCs with HP <= 0) and gather item data
+    // Identify defeated enemies (NPCs with HP <= 0) and gather item data
     const defeatedData = canvas.tokens.placeables
         // Filter: Only include defeated NPCs
         .filter(token => {
@@ -44,7 +44,7 @@ export async function cleanupCombat() {
     const tokensToRemove = defeatedData.map(data => data.id);
     const totalRemoved = defeatedData.length;
 
-    // 2. End Combat
+    // End Combat
     const combat = game.combat;
     let combatStatusMessage = "No active encounter was found.";
 
@@ -54,7 +54,7 @@ export async function cleanupCombat() {
         combatStatusMessage = "The active encounter has been ended.";
     }
 
-    // 3. Remove Tokens
+    // Remove Tokens
     if (tokensToRemove.length > 0) {
         // Delete the tokens from the scene using their IDs
         await canvas.scene.deleteEmbeddedDocuments("Token", tokensToRemove);
@@ -63,7 +63,7 @@ export async function cleanupCombat() {
         ui.notifications.info("Cleanup complete. No defeated NPCs were found to remove.");
     }
 
-    // 4. GM Chat Message
+    // GM Chat Message
     const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
 
     if (gmUsers.length > 0) {

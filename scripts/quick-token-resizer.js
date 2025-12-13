@@ -21,7 +21,7 @@ const SIZE_DIMENSIONS = {
  * Helper function to handle the main logic.
  */
 export async function resizeToken() {
-    // 1. Check for exactly one selected token
+    // Check for exactly one selected token
     const controlled = canvas.tokens.controlled;
     if (controlled.length === 0) {
         return ui.notifications.warn("Please select a token before running this macro.");
@@ -33,7 +33,7 @@ export async function resizeToken() {
     const token = controlled[0];
     const actor = token.actor;
 
-    // 2. Validate actor and PF2e system data
+    // Validate actor and PF2e system data
     if (!actor) {
         return ui.notifications.error(`Token ${token.name} is not linked to an Actor.`);
     }
@@ -49,7 +49,7 @@ export async function resizeToken() {
     // Get the token's current size on the map
     const currentGridSize = token.document.width;
 
-    // 3. Define the size options for the dropdown
+    // Define the size options for the dropdown
     const sizeOptions = {
         // Value: Display Name
         "reset": `Reset to Default (${defaultPf2eSizeKey.toUpperCase()} / ${defaultGridSize}x${defaultGridSize})`,
@@ -76,7 +76,7 @@ export async function resizeToken() {
         optionsHTML += `<option value="${key}" ${isSelected ? 'selected' : ''}>${label}</option>`;
     }
 
-    // 4. Create the Dialog content
+    // Create the Dialog content
     const content = `
         <style>
             .token-resizer-dialog .form-group { margin-bottom: 10px; }
@@ -93,7 +93,7 @@ export async function resizeToken() {
         </div>
     `;
 
-    // 5. Create and render the Dialog
+    // Create and render the Dialog
     new Dialog({
         title: `PF2e Token Resizer: ${token.name}`,
         content: content,

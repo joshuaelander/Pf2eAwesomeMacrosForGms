@@ -36,22 +36,22 @@ function runJournalExport(folderId) {
     let exportTitle = "All Journals";
 
     const collectSortedJournals = (parentId) => {
-        // 1. Get folders that are children of this parentId
+        // Get folders that are children of this parentId
         // (If parentId is null, we look for root folders)
         const childFolders = game.folders
             .filter(f => f.type === "JournalEntry" && f.folder?.id === parentId)
             .sort((a, b) => a.sort - b.sort);
 
-        // 2. Get journals that are inside this specific folder
+        // Get journals that are inside this specific folder
         // (If parentId is null, we look for root journals)
         const childJournals = allJournals
             .filter(j => j.folder?.id === parentId)
             .sort((a, b) => a.sort - b.sort);
 
-        // 3. Add journals to the list (Journals usually appear before subfolders in export logic)
+        // Add journals to the list (Journals usually appear before subfolders in export logic)
         journalsToExport.push(...childJournals);
 
-        // 4. Recursively process each subfolder
+        // Recursively process each subfolder
         for (const folder of childFolders) {
             collectSortedJournals(folder.id);
         }

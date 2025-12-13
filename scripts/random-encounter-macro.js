@@ -46,7 +46,7 @@ export async function generateEncounter() {
     }
     ui.notifications.info("Starting Encounter Generation...");
 
-    // 1. Get Party Data
+    // Get Party Data
     const characters = game.actors.filter(a => a.type === "character" && a.hasPlayerOwner);
     if (characters.length === 0) {
         return ui.notifications.error("No player characters found to scale encounter.");
@@ -155,7 +155,7 @@ export async function generateEncounter() {
     // --- END: Difficulty and Trait Selection Dialog ---
 
 
-    // 2. Get Random Scene
+    // Get Random Scene
     const sceneFolder = await getOrCreateSceneFolder();
     if (!sceneFolder) {
         return ui.notifications.error(`Folder "${SCENE_FOLDER_NAME}" not found in Scenes directory.`);
@@ -168,7 +168,7 @@ export async function generateEncounter() {
 
     const targetScene = scenes[Math.floor(Math.random() * scenes.length)];
 
-    // 3. Select Monsters - PASSING THE SELECTED TRAIT AND RARITY
+    // Select Monsters - PASSING THE SELECTED TRAIT AND RARITY
     const monstersToSpawn = await pickMonsters(apl, xpBudget, selectedTrait, selectedRarity);
 
     if (monstersToSpawn.length === 0) {
@@ -179,7 +179,7 @@ export async function generateEncounter() {
         return;
     }
 
-    // 4. Activate Scene and calculate cluster anchor
+    // Activate Scene and calculate cluster anchor
     await targetScene.view();
 
     // Calculate the raw center point for the monster spawn
@@ -225,7 +225,7 @@ export async function generateEncounter() {
             }
         }
 
-        // 5. Send GM-only chat message
+        // Send GM-only chat message
         const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
 
         await ChatMessage.create({
