@@ -1,11 +1,11 @@
 # Pf2eAwesomeMacrosForGms
-Overview: A collection of very useful Foundry VTT macros for GMs to use in PF2e
+Overview: A collection of very useful Foundry VTT macros for GMs to use in PF2e. I often found myself needing things mid-session so I decided to make them myself. Here are 10 ones I found useful.
 
 Contents: \
 1.) Apply Initiative Modifier - Updates players initiatives easily after start of encounter	\
 2.) Award Xp - Award selected or all players xp	\
 3.) Easy Add Conditions  - Add conditions to selected or all players	\
-4.) Easy Exploration - Add exploration activites to selected layer and post to chat \
+4.) Easy Exploration - Add exploration activites to selected player and post to chat \
 5.) Full Restore - Restore hp to full and heal certain conditions related to resting or healing \
 6.) Journal to HTML Export - Export a copy of the journal to help the GM to study before sessions \
 7.) Quick Combat Cleanup - Remove dead creatures bodies after combat and end the encounter. \
