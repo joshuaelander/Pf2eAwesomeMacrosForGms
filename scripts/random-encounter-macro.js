@@ -4,35 +4,9 @@
  * It is called by the main module script and the auto-created macro.
  */
 
-export const SCENE_FOLDER_NAME = "Random Encounters";
 export const RANDOM_ENCOUNTER_MACRO_NAME = "Create Random Encounter";
 export const RANDOM_ENCOUNTER_MACRO_ICON = "icons/environment/creatures/golem-stone-purple.webp";
 
-/**
- * Gets an existing Scene folder by name, or creates it if it doesn't exist.
- * @returns {Promise<Folder|null>} The Folder document, or null if creation failed.
- */
-async function getOrCreateSceneFolder() {
-    let folder = game.folders.getName(SCENE_FOLDER_NAME);
-
-    if (!folder) {
-        try {
-            folder = await Folder.create({
-                name: SCENE_FOLDER_NAME,
-                type: 'Scene',
-                parent: null,
-            });
-            ui.notifications.info(`[PF2e Generator] Created Scene folder: "${SCENE_FOLDER_NAME}". Please place scenes inside it.`);
-        } catch (err) {
-            console.error(`PF2e Generator | Failed to create Scene folder: ${SCENE_FOLDER_NAME}`, err);
-            ui.notifications.error(`Failed to create Scene folder "${SCENE_FOLDER_NAME}". Check F12 console.`);
-            return null;
-        }
-    }
-    return folder;
-}
-
-// --- CORE LOGIC WRAPPED IN A GLOBAL FUNCTION ---
 /**
  * Executes the random encounter generation process.
  * This is the function that the auto-created macro will call.
@@ -42,9 +16,16 @@ export async function generateEncounter() {
         ui.notifications.warn("Only the GM can generate encounters!");
         return;
     }
+
+    // 1. Validate that the GM is actually viewing a scene
+    const targetScene = canvas.scene;
+    if (!targetScene) {
+        return ui.notifications.error("You must be viewing an active scene to generate an encounter on it.");
+    }
+
     ui.notifications.info("Starting Encounter Generation...");
 
-    // Get default Party Data to populate the UI fields[cite: 6]
+    // Get default Party Data to populate the UI fields
     let defaultCharacters = [];
     if (game.actors.party) {
         defaultCharacters = Array.from(game.actors.party.members);
@@ -100,17 +81,18 @@ export async function generateEncounter() {
                 </div>
             </div>
 
+            <!-- 2. Updated Difficulty UI to be a horizontal row -->
             <div class="form-group" style="padding: 5px 0;">
                 <label class="reg-header">Select Base Difficulty:</label>
-                <div class="form-fields" style="display: flex; flex-direction: column; gap: 5px; margin-top: 5px;">
+                <div class="form-fields" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 5px; justify-content: space-between;">
                     ${Object.keys(xpValues).map(key => `
-                        <label class="radio-label" style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="radio" name="difficulty" value="${key}" ${key === 'Moderate' ? 'checked' : ''} style="margin-right: 8px;">
-                            ${key} (${xpValues[key]} Base XP)
+                        <label class="radio-label" style="display: flex; align-items: center; cursor: pointer; font-size: 0.9em;">
+                            <input type="radio" name="difficulty" value="${key}" ${key === 'Moderate' ? 'checked' : ''} style="margin-right: 4px;">
+                            ${key} (${xpValues[key]})
                         </label>
                     `).join('')}
                 </div>
-                <p style="font-size: 0.8em; color: var(--color-text-dark-secondary); margin-top: 4px;">*XP budget automatically scales based on the Party Size above.</p>
+                <p style="font-size: 0.8em; color: var(--color-text-dark-secondary); margin-top: 4px; text-align: center;">*XP budget automatically scales based on the Party Size above.</p>
             </div>
             
             <div class="form-group" style="padding: 5px 0;">
@@ -147,11 +129,9 @@ export async function generateEncounter() {
                         const partySize = parseInt(html.find('input[name="partySize"]').val(), 10) || 4;
                         const selectedDifficulty = html.find('input[name="difficulty"]:checked').val();
 
-                        // Extract arrays of checked rarities and traits
                         const selectedRarities = html.find('input[name="rarity"]:checked').map(function () { return this.value; }).get();
                         const selectedTraits = html.find('input[name="trait"]:checked').map(function () { return this.value; }).get();
 
-                        // Add custom trait if provided
                         const otherTrait = html.find('input[name="otherTrait"]').val().trim().toLowerCase();
                         if (otherTrait) selectedTraits.push(otherTrait);
 
@@ -166,7 +146,7 @@ export async function generateEncounter() {
             },
             default: "generate",
             close: () => resolve(null)
-        }, { width: 450 }).render(true);
+        }, { width: 500 }).render(true); // Widened to 500 to fit the difficulty row beautifully
     });
 
     const result = await dialogPromise;
@@ -183,27 +163,10 @@ export async function generateEncounter() {
     }
 
     const baseXp = xpValues[selectedDifficulty];
-
-    // Adjustment: 20xp per character variance from 4-person party[cite: 6]
     let xpBudget = baseXp + (20 * (partySize - 4));
-
-    // Safety cap: Ensure budget is at least Trivial XP for a 4-person party (40 XP)[cite: 6]
     if (xpBudget < 40) xpBudget = 40;
 
     ui.notifications.info(`Generating a ${selectedDifficulty} encounter (Budget: ${xpBudget} XP) for APL ${apl}.`);
-
-    // Get Random Scene[cite: 6]
-    const sceneFolder = await getOrCreateSceneFolder();
-    if (!sceneFolder) {
-        return ui.notifications.error(`Folder "${SCENE_FOLDER_NAME}" not found in Scenes directory.`);
-    }
-
-    const scenes = sceneFolder.contents;
-    if (scenes.length === 0) {
-        return ui.notifications.error(`No scenes found in folder "${SCENE_FOLDER_NAME}".`);
-    }
-
-    const targetScene = scenes[Math.floor(Math.random() * scenes.length)];
 
     // Select Monsters passing arrays
     const monstersToSpawn = await pickMonsters(apl, xpBudget, selectedTraits, selectedRarities);
@@ -213,11 +176,22 @@ export async function generateEncounter() {
         return;
     }
 
-    // Activate Scene and calculate cluster anchor[cite: 6]
-    await targetScene.view();
+    // 3. Prompt GM to click the canvas to set the spawn point
+    ui.notifications.info(`Encounter generated! Left-click anywhere on the map to place the monsters.`);
 
-    const clusterX = Math.floor(targetScene.dimensions.width / 2);
-    const clusterY = Math.floor(targetScene.dimensions.height / 2);
+    const clickPos = await new Promise((resolve) => {
+        const handler = (event) => {
+            // Only trigger on Left-Click (button 0)
+            if (event.data.button === 0) {
+                canvas.app.stage.off('pointerdown', handler);
+                resolve(event.data.getLocalPosition(canvas.app.stage));
+            }
+        };
+        canvas.app.stage.on('pointerdown', handler);
+    });
+
+    const clusterX = clickPos.x;
+    const clusterY = clickPos.y;
 
     // --- Start Building GM Summary ---
     const traitDisplay = selectedTraits.length > 0 ? selectedTraits.join(', ') : 'Any';
@@ -243,32 +217,31 @@ export async function generateEncounter() {
             ${summaryHeader}
             <p style="margin: 10px 0 5px; font-weight: bold;">Creatures Spawned:</p>
             <ul style="list-style-type: circle; margin: 0 0 5px 25px;">${monsterList}</ul>
-            <p style="font-size: 0.85em; color: #777; margin: 0;">Tokens are spawned at the map center for GM placement.</p>
+            <p style="font-size: 0.85em; color: #777; margin: 0;">Tokens were spawned at your clicked location.</p>
         </div>
     `;
 
-    setTimeout(async () => {
-        let successfulSpawns = 0;
-        for (let i = 0; i < monstersToSpawn.length; i++) {
-            const monsterData = monstersToSpawn[i];
-            const spawned = await spawnMonster(monsterData, targetScene, clusterX, clusterY, i);
-            if (spawned) {
-                successfulSpawns++;
-            }
+    // Spawn the selected monsters at the clicked position
+    let successfulSpawns = 0;
+    for (let i = 0; i < monstersToSpawn.length; i++) {
+        const monsterData = monstersToSpawn[i];
+        const spawned = await spawnMonster(monsterData, targetScene, clusterX, clusterY, i);
+        if (spawned) {
+            successfulSpawns++;
         }
+    }
 
-        const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
+    const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
 
-        await ChatMessage.create({
-            user: game.user.id,
-            speaker: { alias: "Encounter Generator" },
-            content: summaryContent,
-            whisper: gmUsers,
-            flavor: "GM-Only Encounter Report"
-        });
+    await ChatMessage.create({
+        user: game.user.id,
+        speaker: { alias: "Encounter Generator" },
+        content: summaryContent,
+        whisper: gmUsers,
+        flavor: "GM-Only Encounter Report"
+    });
 
-        ui.notifications.info(`Encounter generated with ${successfulSpawns} creatures!`);
-    }, 1000);
+    ui.notifications.info(`Encounter generated with ${successfulSpawns} creatures!`);
 }
 
 /**
@@ -329,14 +302,14 @@ export async function pickMonsters(apl, budget, requiredTraits = [], requiredRar
         attempts++;
         let pick = null;
 
-        // Strategy 1 (Consistency): 70% chance to reuse an already selected monster type[cite: 6]
+        // Strategy 1 (Consistency): 70% chance to reuse an already selected monster type
         if (selectedUniqueActorIds.size > 0 && Math.random() < 0.7) {
             const reusableIds = Array.from(selectedUniqueActorIds);
             const reusableId = reusableIds[Math.floor(Math.random() * reusableIds.length)];
             pick = candidates.find(c => c._id === reusableId);
         }
 
-        // Strategy 2 (Synergy/New Monster): 30% chance or fallback[cite: 6]
+        // Strategy 2 (Synergy/New Monster): 30% chance or fallback
         if (!pick) {
             let candidateList = candidates;
 
@@ -418,7 +391,7 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
 
     const gridSize = scene.grid.size || 100;
     const tokensPerRow = 5;
-    const spacing = 2;
+    const spacing = 1.5; // Slightly tightened the cluster so they spawn closer together
 
     const column = spawnIndex % tokensPerRow;
     const row = Math.floor(spawnIndex / tokensPerRow);
@@ -441,7 +414,7 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
         x: x,
         y: y,
         elevation: 0,
-        hidden: true
+        hidden: true // Tokens are spawned hidden so players don't immediately see them
     });
 
     await scene.createEmbeddedDocuments("Token", [tokenData.toObject()]);
