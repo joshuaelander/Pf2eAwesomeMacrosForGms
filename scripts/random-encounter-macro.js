@@ -63,48 +63,51 @@ export async function generateEncounter() {
         <style>
             .reg-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.9em; }
             .reg-grid label { display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
-            .reg-header { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid var(--color-border-dark-4); }
+            .reg-header { font-weight: bold; margin-bottom: 4px; }
             .reg-flex { display: flex; gap: 10px; margin-bottom: 10px; }
             .reg-flex > div { flex: 1; }
+            .ui-underline-separator { border-bottom: 1px solid #782e22; margin-bottom: 10px; font-weight: bold; color: #782e22; }
         </style>
         <form>
             <div class="reg-flex">
                 <div>
-                    <label class="reg-header">Target APL:</label>
-                    <input type="number" name="apl" value="${defaultApl}" min="1" max="20" style="width: 100%; text-align: center;">
-                </div>
-                <div>
                     <label class="reg-header">Party Size:</label>
                     <input type="number" name="partySize" value="${defaultPartySize}" min="1" max="10" style="width: 100%; text-align: center;">
                 </div>
+                <div>
+                    <label class="reg-header">Party Level:</label>
+                    <input type="number" name="apl" value="${defaultApl}" min="1" max="20" style="width: 100%; text-align: center;">
+                </div>
             </div>
+            <div class="ui-underline-separator"></div>
 
-            <!-- 2. Updated Difficulty UI to be a horizontal row -->
             <div class="form-group" style="padding: 5px 0;">
-                <label class="reg-header">Select Base Difficulty:</label>
-                <div class="form-fields" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 5px; justify-content: space-between;">
+                <label class="reg-header">Encounter Difficulty:</label>
+                <div class="form-fields" style="display: flex; flex-direction: column; flex-wrap: wrap; gap: 8px; margin-top: 5px; justify-content: space-between;">
                     ${Object.keys(xpValues).map(key => `
                         <label class="radio-label" style="display: flex; align-items: center; cursor: pointer; font-size: 0.9em;">
                             <input type="radio" name="difficulty" value="${key}" ${key === 'Moderate' ? 'checked' : ''} style="margin-right: 4px;">
-                            ${key} (${xpValues[key]})
+                            ${key} (${xpValues[key]} XP)
                         </label>
                     `).join('')}
                 </div>
-                <p style="font-size: 0.8em; color: var(--color-text-dark-secondary); margin-top: 4px; text-align: center;">*XP budget automatically scales based on the Party Size above.</p>
+                <br/><p style="font-size: 0.8em; color: var(--color-text-dark-secondary); margin-top: 4px; text-align: center;">*XP shown will automatically scale based on the Party Size above.</p>
             </div>
+            <div class="ui-underline-separator"></div>
             
             <div class="form-group" style="padding: 5px 0;">
-                <label class="reg-header">Filter by Rarity (Match Any):</label>
-                <div style="display: flex; gap: 12px; margin-top: 5px;">
+                <label class="reg-header">Creature <br/>Rarities:</label>
+                <div style="display: flex; gap: 12px; margin-top: 5px; align-items: center;">
                     <label><input type="checkbox" name="rarity" value="common" checked> Common</label>
                     <label><input type="checkbox" name="rarity" value="uncommon" checked> Uncommon</label>
                     <label><input type="checkbox" name="rarity" value="rare"> Rare</label>
                     <label><input type="checkbox" name="rarity" value="unique"> Unique</label>
                 </div>
             </div>
+            <div class="ui-underline-separator"></div>
 
             <div class="form-group" style="padding: 5px 0;">
-                <label class="reg-header">Creature Traits (Match Any):</label>
+                <label class="reg-header">Creature Trait(s):</label>
                 <div class="reg-grid" style="margin-top: 5px; margin-bottom: 8px;">
                     ${commonTraits.map(trait => `<label><input type="checkbox" name="trait" value="${trait.toLowerCase()}"> ${trait}</label>`).join('')}
                 </div>
@@ -150,7 +153,6 @@ export async function generateEncounter() {
     const result = await dialogPromise;
 
     if (!result) {
-        ui.notifications.info("Encounter generation cancelled.");
         return;
     }
 
@@ -196,13 +198,13 @@ export async function generateEncounter() {
     const rarityDisplay = selectedRarities.join(', ');
 
     const summaryHeader = `
-        <h3 style="margin: 0; padding-bottom: 5px; border-bottom: 1px solid #ccc;">
-            <i class="fas fa-dice-d20"></i> Random Encounter Report
-        </h3>
+        <h4 style="margin: 0; padding-bottom: 5px; border-bottom: 1px solid #ccc;">
+            <i class="fas fa-dice-d20"></i> Random Encounter
+        </h4>
         <p style="margin: 5px 0 0;"><strong>Scene:</strong> ${targetScene.name}</p>
         <p style="margin: 0;"><strong>Difficulty:</strong> <span style="font-weight: bold; color: #cc0000;">${selectedDifficulty} (${xpBudget} XP)</span></p>
-        <p style="margin: 0;"><strong>APL:</strong> ${apl}, <strong>Party Size:</strong> ${partySize}</p>
-        <p style="margin: 0;"><strong>Traits:</strong> ${traitDisplay} | <strong>Rarity:</strong> ${rarityDisplay}</p>
+        <p style="margin: 0;"><strong>Party Level:</strong> ${apl}<br/><strong>Party Size:</strong> ${partySize}</p>
+        <p style="margin: 0;"><strong>Traits:</strong> ${traitDisplay}<br/><strong>Rarity:</strong> ${rarityDisplay}</p>
     `;
 
     const monsterList = monstersToSpawn.map(m => {
@@ -213,9 +215,8 @@ export async function generateEncounter() {
     const summaryContent = `
         <div style="font-family: 'Baskerville', serif; background: #f9f7f4; padding: 10px; border: 2px solid #5d4037; border-radius: 5px;">
             ${summaryHeader}
-            <p style="margin: 10px 0 5px; font-weight: bold;">Creatures Spawned:</p>
+            <p style="margin: 10px 0 5px; font-weight: bold;">Creature(s) Spawned:</p>
             <ul style="list-style-type: circle; margin: 0 0 5px 25px;">${monsterList}</ul>
-            <p style="font-size: 0.85em; color: #777; margin: 0;">Tokens were spawned at your clicked location.</p>
         </div>
     `;
 
@@ -235,8 +236,7 @@ export async function generateEncounter() {
         user: game.user.id,
         speaker: { alias: "Encounter Generator" },
         content: summaryContent,
-        whisper: gmUsers,
-        flavor: "GM-Only Encounter Report"
+        whisper: gmUsers
     });
 
     ui.notifications.info(`Encounter generated with ${successfulSpawns} creatures!`);
@@ -251,7 +251,7 @@ export async function generateEncounter() {
  * @returns {Promise<Actor[]>} Array of selected monster Actors.
  */
 export async function pickMonsters(apl, budget, requiredTraits = [], requiredRarities = []) {
-    const packKeys = ['pf2e.pathfinder-monster-core', 'pf2e.pathfinder-bestiary'];
+    const packKeys = ['pf2e.pathfinder-monster-core', 'pf2e.pathfinder-monster-core-2', 'pf2e.pathfinder-bestiary', 'pf2e.pathfinder-bestiary-2', 'pf2e.pathfinder-bestiary-3'];
     let candidates = [];
 
     for (const key of packKeys) {

@@ -1,4 +1,4 @@
-// PF2e Token Resizer Macro
+// Quick Token Resizer Macro
 // Use this macro to quickly change the size of a selected token between common PF2e sizes.
 
 export const QUICK_TOKEN_RESIZER_MACRO_NAME = "Quick Token Resizer";
@@ -83,8 +83,8 @@ export async function resizeToken() {
             .token-resizer-dialog .notes { font-size: 0.75em; color: #777; margin-top: 5px; text-align: center; }
         </style>
         <div class="token-resizer-dialog">
-            <p>Select a new size for the token representing <strong>${token.name}</strong>.</p>
-            <p style="font-size: 0.9em; margin-top: -5px;">Current Dimensions: ${currentGridSize}x${currentGridSize} grid units.</p>
+            <p>Select a new size for the <strong>${token.name}</strong>'s token.</p>
+            <p style="font-size: 1em;"><strong>Current Size:</strong><br /> ${currentGridSize}x${currentGridSize} grid units.</p>
             <div class="form-group">
                 <label for="token-size"><strong>New Size:</strong></label>
                 <select id="token-size" name="token-size" style="width: 100%;">${optionsHTML}</select>
@@ -95,7 +95,7 @@ export async function resizeToken() {
 
     // Create and render the Dialog
     new Dialog({
-        title: `PF2e Token Resizer: ${token.name}`,
+        title: `Quick Token Resizer: ${token.name}`,
         content: content,
         buttons: {
             resize: {
