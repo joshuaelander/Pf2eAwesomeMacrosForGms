@@ -1,6 +1,6 @@
 /*
  * Quick Secret Check Macro for PF2e
- * This macro allows GMs to perform instant secret checks (Perception, Stealth, etc.) 
+ * This macro allows GMs to perform instant secret checks (Perception, Stealth, Saves, etc.) 
  * for the whole party or selected tokens against a slider-defined DC.
  * Automatically detects targets to set Recall Knowledge DCs and highlight suggested skills.
  */
@@ -90,15 +90,21 @@ function getSuggestedSkill(actor) {
 }
 
 /**
- * Defensive helper to find skill data on a PF2e actor.
- * Includes special handling for Perception since it's structurally different than standard skills.
+ * Defensive helper to find skill/save data on a PF2e actor.
+ * Includes special handling for Perception and Saves since they are structurally different.
  */
 function getSkillInfo(actor, skillKey) {
     const systemData = actor.system ?? actor.data?.system ?? {};
+    const lowerKey = skillKey.toLowerCase();
 
     // Special handling for Perception
-    if (skillKey.toLowerCase() === 'perception') {
+    if (lowerKey === 'perception') {
         return systemData.perception ?? systemData.attributes?.perception ?? null;
+    }
+
+    // Special handling for Saving Throws
+    if (['fortitude', 'reflex', 'will'].includes(lowerKey)) {
+        return systemData.saves?.[lowerKey] ?? null;
     }
 
     // Standard skills
@@ -108,7 +114,7 @@ function getSkillInfo(actor, skillKey) {
     }
 
     if (skills) {
-        const foundKey = Object.keys(skills).find(k => k.toLowerCase() === skillKey.toLowerCase());
+        const foundKey = Object.keys(skills).find(k => k.toLowerCase() === lowerKey);
         if (foundKey) return skills[foundKey];
     }
 
@@ -352,6 +358,13 @@ export function openSecretCheckDialog() {
         <button type="button" class="${getBtnClass('occultism')}" data-skill="occultism" data-label="Occultism"><i class="fas fa-book-spells"></i> Occultism</button>
         <button type="button" class="${getBtnClass('religion')}" data-skill="religion" data-label="Religion"><i class="fas fa-pray"></i> Religion</button>
         <button type="button" class="${getBtnClass('society')}" data-skill="society" data-label="Society"><i class="fas fa-city"></i> Society</button>
+      </div>
+      
+      <p style="margin-bottom: 8px; margin-top: 4px; font-weight:bold;">Saving Throws:</p>
+      <div class="qsc-grid">
+        <button type="button" class="${getBtnClass('fortitude')}" data-skill="fortitude" data-label="Fortitude"><i class="fas fa-heartbeat"></i> Fortitude</button>
+        <button type="button" class="${getBtnClass('reflex')}" data-skill="reflex" data-label="Reflex"><i class="fas fa-bolt"></i> Reflex</button>
+        <button type="button" class="${getBtnClass('will')}" data-skill="will" data-label="Will"><i class="fas fa-brain"></i> Will</button>
       </div>
       
       <div class="qsc-note">${selectionNote}</div>
