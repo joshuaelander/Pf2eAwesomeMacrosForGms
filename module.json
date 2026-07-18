@@ -1,9 +1,9 @@
 {
 	"id": "pf2e-awesome-macros-for-gms",
 	"title": "PF2e Awesome Macros for GMs",
-	"version": "1.4.0",
+	"version": "2.0.0",
 	"compatibility": {
-		"minimum": "13",
+		"minimum": "14",
 		"verified": "14"
 	},
 	"url": "https://github.com/joshuaelander/Pf2eAwesomeMacrosForGms",

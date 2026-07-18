@@ -37,9 +37,9 @@ export async function applyInitiativeModifier() {
     }
 
     targets = targets.filter(actor => {
-        // Check if the actor is in the current combat[cite: 5]
-        const combatant = combat.getCombatantByActor(actor.id);
-        return combatant;
+        // v14 FIX: Use getCombatantsByActor and check if the array has length
+        const combatants = combat.getCombatantsByActor(actor.id);
+        return combatants && combatants.length > 0;
     });
 
     if (targets.length === 0) {
@@ -53,28 +53,31 @@ export async function applyInitiativeModifier() {
         const chatMessages = [];
 
         targets.forEach(actor => {
-            const combatant = combat.getCombatantByActor(actor.id);
-            if (combatant) {
-                const oldInitiative = combatant.initiative || 0;
-                const newInitiative = oldInitiative + modifier;
+            // v14 FIX: Use getCombatantsByActor and loop through all matched combatants
+            const combatants = combat.getCombatantsByActor(actor.id);
+            if (combatants && combatants.length > 0) {
+                combatants.forEach(combatant => {
+                    const oldInitiative = combatant.initiative || 0;
+                    const newInitiative = oldInitiative + modifier;
 
-                updates.push({
-                    _id: combatant.id,
-                    initiative: newInitiative
+                    updates.push({
+                        _id: combatant.id,
+                        initiative: newInitiative
+                    });
+
+                    // Prepare chat message content using the combatant's name (useful for numbered tokens like "Goblin 1")
+                    const sign = modifier >= 0 ? '+' : '';
+                    chatMessages.push(`<strong>${combatant.name}</strong>: ${oldInitiative} &rarr; ${newInitiative} (${sign}${modifier})`);
                 });
-
-                // Prepare chat message content[cite: 5]
-                const sign = modifier >= 0 ? '+' : '';
-                chatMessages.push(`<strong>${actor.name}</strong>: ${oldInitiative} &rarr; ${newInitiative} (${sign}${modifier})`);
             }
         });
 
-        // Update Combatant Initiatives[cite: 5]
+        // Update Combatant Initiatives
         if (updates.length > 0) {
             try {
                 await combat.updateEmbeddedDocuments("Combatant", updates);
 
-                // Post private GM chat message[cite: 5]
+                // Post private GM chat message
                 const chatContent = `
                     <h3>${macroName} - Initiative Updated</h3>
                     <p>Applied a modifier of <strong>${modifier >= 0 ? '+' : ''}${modifier}</strong> to the following combatants:</p>
@@ -97,7 +100,7 @@ export async function applyInitiativeModifier() {
         }
     };
 
-    // Prepare dialog content with quick buttons[cite: 5]
+    // Prepare dialog content with quick buttons
     const targetNames = targets.map(a => `<li>${a.name}</li>`).join("");
     const dialogContent = `
     <style>
@@ -148,7 +151,7 @@ export async function applyInitiativeModifier() {
     </div>
     `;
 
-    // Display the dialog[cite: 5]
+    // Display the dialog
     let dialogRef = new Dialog({
         title: macroName,
         content: dialogContent,

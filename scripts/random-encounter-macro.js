@@ -46,8 +46,17 @@ export async function generateEncounter() {
     }
     ui.notifications.info("Starting Encounter Generation...");
 
-    // Get Party Data
-    const characters = game.actors.filter(a => a.type === "character" && a.hasPlayerOwner);
+    // Get Party Data using modern PF2e standards
+    let characters = [];
+    if (game.actors.party) {
+        characters = Array.from(game.actors.party.members);
+    } else {
+        characters = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+        if (characters.length === 0) {
+            characters = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
+        }
+    }
+
     if (characters.length === 0) {
         return ui.notifications.error("No player characters found to scale encounter.");
     }
@@ -389,7 +398,7 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
         return false;
     }
 
-    const gridSize = scene.grid.size;
+    const gridSize = scene.grid.size || 100; // v14 FIX: Ensure grid size always has a numeric fallback
     const tokensPerRow = 5;
     const spacing = 2;
 
@@ -402,9 +411,11 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
     let x = anchorX + offsetX;
     let y = anchorY + offsetY;
 
+    // v14 FIX: 'scene.grid.w' and 'scene.grid.h' were removed. 
+    // Snapping logic now calculates purely based on scene.grid.size.
     if (scene.grid.type !== CONST.GRID_TYPES.NONE) {
-        x = scene.grid.w * Math.floor(x / scene.grid.w);
-        y = scene.grid.h * Math.floor(y / scene.grid.h);
+        x = gridSize * Math.floor(x / gridSize);
+        y = gridSize * Math.floor(y / gridSize);
     }
 
     x = Math.round(x);
@@ -417,6 +428,7 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
         hidden: true // Tokens are spawned hidden
     });
 
-    await scene.createEmbeddedDocuments("Token", [tokenData]);
+    // v14 FIX: Always pass token document as a raw object to createEmbeddedDocuments
+    await scene.createEmbeddedDocuments("Token", [tokenData.toObject()]);
     return true;
 }
