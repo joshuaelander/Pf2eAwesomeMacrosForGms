@@ -79,7 +79,7 @@ export async function applyInitiativeModifier() {
 
                 // Post private GM chat message
                 const chatContent = `
-                    <h3>${macroName} - Initiative Updated</h3>
+                    <h5>Initiative Updated</h5>
                     <p>Applied a modifier of <strong>${modifier >= 0 ? '+' : ''}${modifier}</strong> to the following combatants:</p>
                     <ul style="list-style-type: none; padding-left: 0;">${chatMessages.map(msg => `<li>${msg}</li>`).join('')}</ul>
                 `;
@@ -145,9 +145,6 @@ export async function applyInitiativeModifier() {
             <button type="button" class="init-btn neg" data-mod="-4">-4</button>
             <button type="button" class="init-btn neg" data-mod="-5">-5</button>
         </div>
-        <p style="text-align: center; font-size: 0.85em; font-style: italic; color: var(--color-text-dark-secondary);">
-            Clicking a value will immediately apply it and close this window.
-        </p>
     </div>
     `;
 

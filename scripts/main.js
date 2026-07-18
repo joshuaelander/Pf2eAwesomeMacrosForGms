@@ -1,5 +1,5 @@
 /**
- * PF2e Custom Macro Collection (Main Entry Script)
+ * PF2e Awesome Macros for GMs (Main Entry Script)
  * This script runs once on the Foundry VTT 'ready' hook.
  * It serves as the module's entry point, handling imports, global registration, 
  * and programmatically creating macro documents for user convenience.
@@ -7,14 +7,10 @@
 
 // --- 1. CONFIGURATION AND IMPORT MACRO LOGIC FILES ---
 
-// Define the name of the folder where the macros will be placed
 const MACRO_FOLDER_NAME = "PF2e Awesome Macros For GMs";
-// Define the color for the macro folder (use a hex color code)
-const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
+const MACRO_FOLDER_COLOR = "#5549fd"; // Blue color for the macro folder
 
-// Import the core functions and constants for the Random Encounter Generator
-// Note: To set a custom icon for the macro, update MACRO_ICON inside 'random_encounter_macro.js'
-// Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
+// Import the core functions and constants for the macros
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
 import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
 import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
@@ -48,7 +44,7 @@ async function getOrCreateFolder(name, type) {
             });
             ui.notifications.info(`[PF2e Awesome Macros For GMs] Created folder: ${name}.`);
         } catch (err) {
-            console.error(`PF2e Awesome Macros | Failed to create folder: ${name}`, err);
+            console.error(`PF2e Awesome Macros For GMs | Failed to create folder: ${name}`, err);
             return null;
         }
     }
@@ -87,10 +83,10 @@ async function createMacroDocument(name, icon, command, folderId) {
             await Macro.create(macroData, { renderSheet: false });
             ui.notifications.info(`[PF2e Awesome Macros For GMs] Created Macro: ${name}.`);
         } catch (err) {
-            console.error(`PF2e Awesome Macros | Failed to create macro: ${name}`, err);
+            console.error(`PF2e Awesome Macros For GMs | Failed to create macro: ${name}`, err);
         }
     } else {
-        console.warn(`PF2e Awesome Macros | Cannot auto-create macro for non-GM user: ${name}.`);
+        console.warn(`PF2e Awesome Macros For GMs | Cannot auto-create macro for non-GM user: ${name}.`);
     }
 }
 
@@ -191,5 +187,5 @@ Hooks.once('ready', async () => {
             targetFolderId
         );
     }
-    console.log('PF2e Awesome Macros | All module logic and macros initialized.');
+    console.log('PF2e Awesome Macros for GMs | All module logic and macros initialized.');
 });

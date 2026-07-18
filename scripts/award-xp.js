@@ -30,7 +30,7 @@ export async function awardXP() {
 
     // Final check for valid targets
     if (actorsToUpdate.length === 0) {
-        return ui.notifications.warn("No valid PC actors found (selected, Party members, or owned PCs).");
+        return ui.notifications.warn("No valid PC actors found (none selected and no Party members).");
     }
 
     // --- 2. Build and Display Dialog ---
@@ -133,8 +133,8 @@ export async function awardXP() {
                 // but we flag it here for the chat notification.
                 levelUpMessages.push(`
                     <li style="color: #ffaa00; font-weight: bold;">
-                        ${actor.name} has reached ${newXP} XP and is ready to 
-                        LEVEL UP to Level ${currentLevel + 1} (using ${xpThreshold} XP threshold)!
+                        ${actor.name} has ${newXP} XP and can 
+                        LEVEL UP to level ${currentLevel + 1}!
                     </li>
                 `);
             }
@@ -143,7 +143,7 @@ export async function awardXP() {
             notificationSummary.push(`
                 <li style="color: #333;">
                     ${actor.name}: 
-                    <span style="font-weight: bold;">${originalXP}${resetApplied ? ' (Reset)' : ''} XP</span> 
+                    <span style="font-weight: bold;">${originalXP} XP${resetApplied ? ' (Reset)' : ''}</span> 
                     &rarr; 
                     <span style="font-weight: bold; color: #16a34a;">${newXP} XP</span>
                 </li>
@@ -153,16 +153,16 @@ export async function awardXP() {
             try {
                 await actor.update(updateData);
             } catch (error) {
-                console.error(`PF2E XP Macro: Failed to update XP for ${actor.name}:`, error);
+                console.error(`Award XP Macro: Failed to update XP for ${actor.name}:`, error);
             }
         }
 
         // --- 4. Send Chat Notification ---
         let chatContent = `
             <div style="background: #fcfcfc; border: 1px solid #ddd; padding: 10px; border-radius: 8px; font-family: sans-serif;">
-                <h3 style="margin-top: 0; color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 5px;">
-                    <i class="fas fa-coins"></i> Experience Awarded: +${amount} XP (${xpThreshold} XP Level)
-                </h3>
+                <h4 style="margin-top: 0; color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 5px;">
+                    <i class="fas fa-star"></i> Experience Awarded: +${amount} XP<br>(${xpThreshold} XP Level)
+                </h4>
                 <ul style="list-style-type: none; padding: 0;">
                     ${notificationSummary.join('')}
                 </ul>
@@ -175,9 +175,9 @@ export async function awardXP() {
             chatContent += `
                 <hr style="border-top: 1px solid #ddd; margin: 10px 0;">
                 <div style="text-align: center; background: #fffbe6; border: 2px solid #fcd34d; padding: 10px; border-radius: 6px;">
-                    <h3 style="color: #b45309; text-shadow: 1px 1px 1px rgba(0,0,0,0.1); margin: 0 0 5px 0;">
-                        <i class="fas fa-star" style="margin-right: 5px;"></i> LEVEL UP ALERT!
-                    </h3>
+                    <h5 style="color: #b45309; text-shadow: 1px 1px 1px rgba(0,0,0,0.1); margin: 0 0 5px 0;">
+                        LEVEL UP <i class="fas fa-arrow-up" style="margin-right: 5px;"></i>
+                    </h5>
                     <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
                         ${levelUpMessages.join('')}
                     </ul>
@@ -189,7 +189,7 @@ export async function awardXP() {
 
         await ChatMessage.create({
             user: game.user.id,
-            speaker: ChatMessage.getSpeaker({ alias: "GM XP Award" }),
+            speaker: ChatMessage.getSpeaker({ alias: "Award XP Macro" }),
             content: chatContent,
             whisper: [],
             // v14 FIX: Removed deprecated type property entirely

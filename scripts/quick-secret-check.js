@@ -5,7 +5,7 @@
  * Automatically detects targets to set Recall Knowledge DCs and highlight suggested skills.
  */
 
-export const QUICK_SECRET_MACRO_NAME = "Quick Secret Check";
+export const QUICK_SECRET_MACRO_NAME = "Quick Secret Skill Check";
 export const QUICK_SECRET_MACRO_ICON = "icons/magic/symbols/question-stone-yellow.webp";
 
 /**
@@ -155,12 +155,12 @@ async function createAggregatedSecretMessage(results, dc, skillLabel, targetName
     `;
     }
 
-    const titlePrefix = targetName ? `Secret ${escapeHtml(skillLabel)} vs ${escapeHtml(targetName)}` : `Secret ${escapeHtml(skillLabel)} Check`;
+    const titlePrefix = targetName ? `Secret ${escapeHtml(skillLabel)} Check <br>vs ${escapeHtml(targetName)}` : `Secret ${escapeHtml(skillLabel)} Check`;
     const title = `${titlePrefix} (DC ${dc})`;
 
     const content = `
     <div class="secret-check-result" style="padding:6px;">
-      <h3 style="margin-bottom: 8px; border-bottom: 1px solid var(--color-border-dark-4); padding-bottom: 4px;">${title}</h3>
+      <h5 style="margin-bottom: 8px; border-bottom: 1px solid var(--color-border-dark-4); padding-bottom: 4px;">${title}</h5>
       ${rows}
     </div>
   `;
@@ -207,7 +207,7 @@ async function performSecretCheck(skillKey, skillLabel, dc, targetName) {
     }
 
     if (targetActors.length === 0) {
-        ui.notifications.error('No target actors found (no controlled tokens and no party actors).');
+        ui.notifications.error('No usable actors found (no controlled tokens and no party actors).');
         return;
     }
 
@@ -337,7 +337,7 @@ export function openSecretCheckDialog() {
         <span id="qsc-dc-display" class="qsc-dc-display">${initialDC}</span>
       </div>
       
-      <p style="margin-bottom: 8px; font-weight:bold;">Exploration & Interaction:</p>
+      <p style="margin-bottom: 8px; font-weight:bold;">Exploration Activities:</p>
       <div class="qsc-grid">
         <button type="button" class="${getBtnClass('perception')}" data-skill="perception" data-label="Perception"><i class="fas fa-eye"></i> Perception</button>
         <button type="button" class="${getBtnClass('stealth')}" data-skill="stealth" data-label="Stealth"><i class="fas fa-user-ninja"></i> Stealth</button>
@@ -349,7 +349,7 @@ export function openSecretCheckDialog() {
         <button type="button" class="${getBtnClass('acrobatics')}" data-skill="acrobatics" data-label="Acrobatics"><i class="fas fa-running"></i> Acrobatics</button>
       </div>
 
-      <p style="margin-bottom: 8px; font-weight:bold;">Knowledge & Identification:</p>
+      <p style="margin-bottom: 8px; font-weight:bold;">Knowledge Checks:</p>
       <div class="qsc-grid">
         <button type="button" class="${getBtnClass('arcana')}" data-skill="arcana" data-label="Arcana"><i class="fas fa-hat-wizard"></i> Arcana</button>
         <button type="button" class="${getBtnClass('crafting')}" data-skill="crafting" data-label="Crafting"><i class="fas fa-hammer"></i> Crafting</button>
@@ -372,7 +372,7 @@ export function openSecretCheckDialog() {
   `;
 
     let dialogRef = new Dialog({
-        title: 'Quick Secret Check',
+        title: 'Quick Secret Skill Check',
         content: content,
         buttons: {
             cancel: {
