@@ -9,7 +9,7 @@ Contents: \
 5.) Full Restore - Restore hp to full and heal certain conditions related to resting or healing \
 6.) Journal to HTML Export - Export a copy of the journal to help the GM to study before sessions \
 7.) Quick Combat Cleanup - Remove dead creatures bodies after combat and end the encounter. \
-8.) Quick Recall Knowledge - Do a full party recall knowledge to help speed up when multiple people want to check \
+8.) Quick Secret/Recall Knowledge Check - Do a full party recall knowledge or other secret checks to help speed up when multiple people want to check or you need secret rolls \
 9.) Quick Token Resizer - Quickly resize token to big or small to help with space in dungeons \
 10.) Random Encounter Generator - Generate a random encounter from the bestiary or monster core of PF2e
 

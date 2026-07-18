@@ -2,10 +2,11 @@
  * Quick Secret Check Macro for PF2e
  * This macro allows GMs to perform instant secret checks (Perception, Stealth, etc.) 
  * for the whole party or selected tokens against a slider-defined DC.
+ * Automatically detects targets to set Recall Knowledge DCs and highlight suggested skills.
  */
 
 export const QUICK_SECRET_MACRO_NAME = "Quick Secret Check";
-export const QUICK_SECRET_MACRO_ICON = "icons/magic/control/hypnosis-mesmerism-eye-tan.webp";
+export const QUICK_SECRET_MACRO_ICON = "icons/magic/symbols/question-stone-yellow.webp";
 
 /**
  * Simple HTML escape to avoid injection in chat content/options.
@@ -52,12 +53,49 @@ function calculateDegreeOfSuccess(total, dc, d20Result) {
 }
 
 /**
+ * Calculates the standard level-based DC for a given target actor, adjusted for rarity.
+ */
+function calculateRKDC(targetActor) {
+    if (!targetActor || targetActor.type !== 'npc') return 15;
+    const level = targetActor.system?.details?.level?.value || 0;
+    const rarity = targetActor.system?.traits?.rarity || 'common';
+
+    const dcs = {
+        "-1": 13, 0: 14, 1: 15, 2: 16, 3: 18, 4: 19, 5: 20, 6: 22,
+        7: 23, 8: 24, 9: 26, 10: 27, 11: 28, 12: 30, 13: 31, 14: 32,
+        15: 34, 16: 35, 17: 36, 18: 38, 19: 39, 20: 40, 21: 42,
+        22: 44, 23: 46, 24: 48, 25: 50
+    };
+    let dc = dcs[level] !== undefined ? dcs[level] : (14 + level * 1.3);
+
+    if (rarity === 'uncommon') dc += 2;
+    else if (rarity === 'rare') dc += 5;
+    else if (rarity === 'unique') dc += 10;
+
+    return Math.floor(dc);
+}
+
+/**
+ * Maps a target's traits to the most likely Recall Knowledge skill.
+ */
+function getSuggestedSkill(actor) {
+    if (!actor || actor.type !== 'npc') return null;
+    const traits = actor.system?.traits?.value || [];
+    const rkMap = { aberration: 'occultism', animal: 'nature', astral: 'occultism', beast: 'nature', celestial: 'religion', construct: 'crafting', dragon: 'arcana', elemental: 'arcana', ethereal: 'occultism', fey: 'nature', fiend: 'religion', fungus: 'nature', humanoid: 'society', monitor: 'religion', ooze: 'occultism', plant: 'nature', spirit: 'occultism', undead: 'religion' };
+
+    for (const trait of traits) {
+        if (rkMap[trait]) return rkMap[trait];
+    }
+    return null;
+}
+
+/**
  * Defensive helper to find skill data on a PF2e actor.
  * Includes special handling for Perception since it's structurally different than standard skills.
  */
 function getSkillInfo(actor, skillKey) {
     const systemData = actor.system ?? actor.data?.system ?? {};
-    
+
     // Special handling for Perception
     if (skillKey.toLowerCase() === 'perception') {
         return systemData.perception ?? systemData.attributes?.perception ?? null;
@@ -67,11 +105,6 @@ function getSkillInfo(actor, skillKey) {
     const skills = systemData.skills ?? null;
     if (skills && skills[skillKey]) {
         return skills[skillKey];
-    }
-
-    // Try older shapes or flattened names for backward compatibility
-    if (actor.data?.data?.skills && actor.data.data.skills[skillKey]) {
-        return actor.data.data.skills[skillKey];
     }
 
     if (skills) {
@@ -86,7 +119,7 @@ function getSkillInfo(actor, skillKey) {
  * Create the secret aggregated chat message for multiple checks.
  * Whispered to all GMs (GM-only).
  */
-async function createAggregatedSecretMessage(results, dc, skillLabel) {
+async function createAggregatedSecretMessage(results, dc, skillLabel, targetName = null) {
     const colorMap = {
         'Critical Success': '#00aa00',
         'Success': '#0066cc',
@@ -100,8 +133,7 @@ async function createAggregatedSecretMessage(results, dc, skillLabel) {
         const d20display = res.d20 !== null ? `${res.d20}` : '—';
         const isNat20 = res.d20 === 20;
         const isNat1 = res.d20 === 1;
-        
-        // Highlight nat 1 and 20 visually in the breakdown
+
         let d20Formatted = d20display;
         if (isNat20) d20Formatted = `<strong style="color: #00aa00;">${d20display}</strong>`;
         if (isNat1) d20Formatted = `<strong style="color: #cc0000;">${d20display}</strong>`;
@@ -117,10 +149,12 @@ async function createAggregatedSecretMessage(results, dc, skillLabel) {
     `;
     }
 
-    const title = `Secret ${escapeHtml(skillLabel)} Check (DC ${dc})`;
+    const titlePrefix = targetName ? `Secret ${escapeHtml(skillLabel)} vs ${escapeHtml(targetName)}` : `Secret ${escapeHtml(skillLabel)} Check`;
+    const title = `${titlePrefix} (DC ${dc})`;
+
     const content = `
     <div class="secret-check-result" style="padding:6px;">
-      <h3 style="margin-bottom: 8px;">${title}</h3>
+      <h3 style="margin-bottom: 8px; border-bottom: 1px solid var(--color-border-dark-4); padding-bottom: 4px;">${title}</h3>
       ${rows}
     </div>
   `;
@@ -141,7 +175,7 @@ async function createAggregatedSecretMessage(results, dc, skillLabel) {
 /**
  * Perform secret checks for multiple actors.
  */
-async function performSecretCheck(skillKey, skillLabel, dc) {
+async function performSecretCheck(skillKey, skillLabel, dc, targetName) {
     const controlled = canvas?.tokens?.controlled ?? [];
     let targetActors = [];
 
@@ -174,8 +208,7 @@ async function performSecretCheck(skillKey, skillLabel, dc) {
     // Roll for each actor
     const rollPromises = targetActors.map(async (actor) => {
         const skillInfo = getSkillInfo(actor, skillKey);
-        
-        // Grab modifier from multiple possible locations depending on PF2e version
+
         const modifier = Number(skillInfo?.mod ?? skillInfo?.value ?? skillInfo?.total ?? 0);
         const safeModifier = Number.isFinite(modifier) ? modifier : 0;
         const formula = `1d20 ${safeModifier >= 0 ? '+' : '-'} ${Math.abs(safeModifier)}`;
@@ -217,7 +250,7 @@ async function performSecretCheck(skillKey, skillLabel, dc) {
         return;
     }
 
-    await createAggregatedSecretMessage(results, dc, skillLabel);
+    await createAggregatedSecretMessage(results, dc, skillLabel, targetName);
 }
 
 /**
@@ -225,9 +258,25 @@ async function performSecretCheck(skillKey, skillLabel, dc) {
  * Utilizes a DC Slider and a grid of Quick Buttons for immediate rolling.
  */
 export function openSecretCheckDialog() {
+    // 1. Check for targeted enemies to auto-set DC and suggest a skill
+    const targets = Array.from(game.user.targets ?? []);
+    const targetActor = targets.length > 0 ? targets[0].actor : null;
+
+    const initialDC = targetActor ? calculateRKDC(targetActor) : 15;
+    const suggestedSkill = targetActor ? getSuggestedSkill(targetActor) : null;
+
+    const targetIndicator = targetActor
+        ? `<div style="text-align: center; color: var(--color-text-dark-primary); margin-bottom: 8px; font-weight: bold; font-size: 1.1em;">
+             <i class="fas fa-crosshairs" style="color: #8b0000;"></i> Target: ${escapeHtml(targetActor.name)}
+           </div>`
+        : '';
+
     const selectionNote = (canvas?.tokens?.controlled?.length > 0)
         ? `Using ${canvas.tokens.controlled.length} selected token(s).`
         : `Using the active party (Alliance: Party).`;
+
+    // Helper to conditionally apply the highlight class
+    const getBtnClass = (skillKey) => skillKey === suggestedSkill ? 'qsc-btn qsc-suggested' : 'qsc-btn';
 
     const content = `
     <style>
@@ -237,6 +286,7 @@ export function openSecretCheckDialog() {
       .qsc-dc-display { font-size: 1.5em; font-weight: bold; width: 40px; text-align: right; color: var(--color-text-dark-primary); }
       .qsc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
       .qsc-btn { 
+          position: relative;
           padding: 8px; 
           background: var(--color-background-light-2); 
           border: 1px solid var(--color-border-dark-4); 
@@ -251,34 +301,57 @@ export function openSecretCheckDialog() {
       }
       .qsc-btn:hover { background: var(--color-background-light-1); box-shadow: 0 0 5px var(--color-shadow-primary); }
       .qsc-btn i { font-size: 1.1em; color: var(--color-text-dark-secondary); }
+      
+      /* Highlight class for suggested skills */
+      .qsc-suggested { 
+          border: 2px solid #d99a2c; 
+          background: rgba(217, 154, 44, 0.15); 
+          box-shadow: 0 0 6px rgba(217, 154, 44, 0.5); 
+      }
+      .qsc-suggested i { color: #8b5a00; }
+      .qsc-suggested::after {
+          content: '★';
+          position: absolute;
+          top: -6px;
+          right: -4px;
+          color: #d99a2c;
+          font-size: 1.1em;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      }
+
       .qsc-note { font-size: 0.85em; color: var(--color-text-dark-secondary); font-style: italic; text-align: center; margin-top: 8px; }
     </style>
     <div class="qsc-container">
+      
+      ${targetIndicator}
+
       <div class="qsc-dc-wrapper">
         <label style="font-weight: bold;">Target DC:</label>
-        <input type="range" id="qsc-dc-slider" class="qsc-dc-slider" min="10" max="50" value="15" step="1"/>
-        <span id="qsc-dc-display" class="qsc-dc-display">15</span>
+        <input type="range" id="qsc-dc-slider" class="qsc-dc-slider" min="10" max="50" value="${initialDC}" step="1"/>
+        <span id="qsc-dc-display" class="qsc-dc-display">${initialDC}</span>
       </div>
       
       <p style="margin-bottom: 8px; font-weight:bold;">Exploration & Interaction:</p>
       <div class="qsc-grid">
-        <button type="button" class="qsc-btn" data-skill="perception" data-label="Perception"><i class="fas fa-eye"></i> Perception</button>
-        <button type="button" class="qsc-btn" data-skill="stealth" data-label="Stealth"><i class="fas fa-user-ninja"></i> Stealth</button>
-        <button type="button" class="qsc-btn" data-skill="deception" data-label="Deception"><i class="fas fa-mask"></i> Deception</button>
-        <button type="button" class="qsc-btn" data-skill="diplomacy" data-label="Diplomacy"><i class="fas fa-handshake"></i> Diplomacy</button>
-        <button type="button" class="qsc-btn" data-skill="thievery" data-label="Thievery"><i class="fas fa-unlock-alt"></i> Thievery</button>
-        <button type="button" class="qsc-btn" data-skill="survival" data-label="Survival"><i class="fas fa-campground"></i> Survival</button>
+        <button type="button" class="${getBtnClass('perception')}" data-skill="perception" data-label="Perception"><i class="fas fa-eye"></i> Perception</button>
+        <button type="button" class="${getBtnClass('stealth')}" data-skill="stealth" data-label="Stealth"><i class="fas fa-user-ninja"></i> Stealth</button>
+        <button type="button" class="${getBtnClass('deception')}" data-skill="deception" data-label="Deception"><i class="fas fa-mask"></i> Deception</button>
+        <button type="button" class="${getBtnClass('diplomacy')}" data-skill="diplomacy" data-label="Diplomacy"><i class="fas fa-handshake"></i> Diplomacy</button>
+        <button type="button" class="${getBtnClass('thievery')}" data-skill="thievery" data-label="Thievery"><i class="fas fa-unlock-alt"></i> Thievery</button>
+        <button type="button" class="${getBtnClass('survival')}" data-skill="survival" data-label="Survival"><i class="fas fa-campground"></i> Survival</button>
+        <button type="button" class="${getBtnClass('athletics')}" data-skill="athletics" data-label="Athletics"><i class="fas fa-dumbbell"></i> Athletics</button>
+        <button type="button" class="${getBtnClass('acrobatics')}" data-skill="acrobatics" data-label="Acrobatics"><i class="fas fa-running"></i> Acrobatics</button>
       </div>
 
       <p style="margin-bottom: 8px; font-weight:bold;">Knowledge & Identification:</p>
       <div class="qsc-grid">
-        <button type="button" class="qsc-btn" data-skill="arcana" data-label="Arcana"><i class="fas fa-hat-wizard"></i> Arcana</button>
-        <button type="button" class="qsc-btn" data-skill="crafting" data-label="Crafting"><i class="fas fa-hammer"></i> Crafting</button>
-        <button type="button" class="qsc-btn" data-skill="medicine" data-label="Medicine"><i class="fas fa-briefcase-medical"></i> Medicine</button>
-        <button type="button" class="qsc-btn" data-skill="nature" data-label="Nature"><i class="fas fa-leaf"></i> Nature</button>
-        <button type="button" class="qsc-btn" data-skill="occultism" data-label="Occultism"><i class="fas fa-book-spells"></i> Occultism</button>
-        <button type="button" class="qsc-btn" data-skill="religion" data-label="Religion"><i class="fas fa-pray"></i> Religion</button>
-        <button type="button" class="qsc-btn" data-skill="society" data-label="Society"><i class="fas fa-city"></i> Society</button>
+        <button type="button" class="${getBtnClass('arcana')}" data-skill="arcana" data-label="Arcana"><i class="fas fa-hat-wizard"></i> Arcana</button>
+        <button type="button" class="${getBtnClass('crafting')}" data-skill="crafting" data-label="Crafting"><i class="fas fa-hammer"></i> Crafting</button>
+        <button type="button" class="${getBtnClass('medicine')}" data-skill="medicine" data-label="Medicine"><i class="fas fa-briefcase-medical"></i> Medicine</button>
+        <button type="button" class="${getBtnClass('nature')}" data-skill="nature" data-label="Nature"><i class="fas fa-leaf"></i> Nature</button>
+        <button type="button" class="${getBtnClass('occultism')}" data-skill="occultism" data-label="Occultism"><i class="fas fa-book-spells"></i> Occultism</button>
+        <button type="button" class="${getBtnClass('religion')}" data-skill="religion" data-label="Religion"><i class="fas fa-pray"></i> Religion</button>
+        <button type="button" class="${getBtnClass('society')}" data-skill="society" data-label="Society"><i class="fas fa-city"></i> Society</button>
       </div>
       
       <div class="qsc-note">${selectionNote}</div>
@@ -298,7 +371,7 @@ export function openSecretCheckDialog() {
             // Live update the DC number display when dragging the slider
             const slider = html.find('#qsc-dc-slider');
             const display = html.find('#qsc-dc-display');
-            slider.on('input', function() {
+            slider.on('input', function () {
                 display.text(this.value);
             });
 
@@ -308,15 +381,16 @@ export function openSecretCheckDialog() {
                 const skillKey = button.dataset.skill;
                 const skillLabel = button.dataset.label;
                 const dc = parseInt(slider.val(), 10) || 15;
-                
+                const targetLabel = targetActor ? targetActor.name : null;
+
                 // Fire the check
-                performSecretCheck(skillKey, skillLabel, dc);
-                
+                performSecretCheck(skillKey, skillLabel, dc, targetLabel);
+
                 // Instantly close the dialog for a split-second workflow
                 dialogRef.close();
             });
         }
     });
-    
+
     dialogRef.render(true);
 }

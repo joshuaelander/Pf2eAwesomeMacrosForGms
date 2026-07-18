@@ -16,7 +16,6 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 // Note: To set a custom icon for the macro, update MACRO_ICON inside 'random_encounter_macro.js'
 // Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
-import { openGmRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
 import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
 import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_ICON } from './quick-token-resizer.js';
@@ -103,7 +102,6 @@ Hooks.once('ready', async () => {
 
     // Register Global Functions 
     game.pf2eAwesomeMacros.generateEncounter = generateEncounter;
-    game.pf2eAwesomeMacros.openGmRecallKnowledgeDialog = openGmRecallKnowledgeDialog;
     game.pf2eAwesomeMacros.openJournalExportDialog = openJournalExportDialog;
     game.pf2eAwesomeMacros.openFullRestoreDialog = openFullRestoreDialog;
     game.pf2eAwesomeMacros.resizeToken = resizeToken;
@@ -127,13 +125,6 @@ Hooks.once('ready', async () => {
             RANDOM_ENCOUNTER_MACRO_NAME,
             RANDOM_ENCOUNTER_MACRO_ICON,
             `game.pf2eAwesomeMacros.generateEncounter();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            QUICK_RECALL_MACRO_NAME, 
-            QUICK_RECALL_MACRO_ICON, 
-            `game.pf2eAwesomeMacros.openGmRecallKnowledgeDialog();`,
             targetFolderId
         );
 
