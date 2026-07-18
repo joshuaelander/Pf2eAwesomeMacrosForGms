@@ -4,8 +4,8 @@
  * a custom leveling pace (Fast/Normal/Slow) and resetting excess XP.
  * Selection logic:
  * 1. Selected tokens/actors.
- * 2. If none selected, the members of the "Party" actor (if it exists).
- * 3. If "Party" doesn't exist, all owned Player Characters (type: character).
+ * 2. Active party (game.actors.party).
+ * 3. Fallback to all owned Player Characters.
  * * Notifies the public chat of the update, including a level-up alert if max XP is reached.
  */
 
@@ -15,27 +15,17 @@ export const EXPERIENCE_AWARD_MACRO_ICON = "icons/magic/light/explosion-beam-imp
 // Define the main asynchronous function for the macro
 export async function awardXP() {
     // --- 1. Determine Target Actors ---
-    const selectedActors = canvas.tokens.controlled.map(t => t.actor).filter(a => a);
-    let actorsToUpdate = [];
-
-    if (selectedActors.length > 0) {
-        // Case 1: Use selected tokens/actors
-        actorsToUpdate = selectedActors.filter(a => a.type === "character");
-    }
+    let actorsToUpdate = canvas.tokens.controlled.map(t => t.actor).filter(a => a && a.type === 'character');
 
     if (actorsToUpdate.length === 0) {
-        // Case 2: Check for the "Party" actor
-        const partyActor = game.actors.find(a => a.name === "Party" && a.type === "party");
-
-        if (partyActor) {
-            // Party actor found, update all its members (characters only)
-            actorsToUpdate = partyActor.members.filter(m => m.type === "character");
+        if (game.actors.party) {
+            actorsToUpdate = Array.from(game.actors.party.members);
+        } else {
+            actorsToUpdate = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+            if (actorsToUpdate.length === 0) {
+                actorsToUpdate = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
+            }
         }
-    }
-
-    if (actorsToUpdate.length === 0) {
-        // Case 3: Default to all owned PCs
-        actorsToUpdate = game.actors.filter(a => a.type === "character" && a.isOwner);
     }
 
     // Final check for valid targets
@@ -202,13 +192,10 @@ export async function awardXP() {
             speaker: ChatMessage.getSpeaker({ alias: "GM XP Award" }),
             content: chatContent,
             whisper: [],
-            // Public to all
-            roll: null,
-            sound: notificationSound,
-            type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+            // v14 FIX: Removed deprecated type property entirely
+            sound: notificationSound || undefined
         });
 
         ui.notifications.info(`Successfully awarded +${amount} XP to ${actors.length} actor(s). Check chat for details.`);
     }
-
 };

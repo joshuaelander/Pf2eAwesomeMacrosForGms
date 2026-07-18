@@ -2,8 +2,8 @@
  * PF2e Add Status Effect
  * * A macro to add a specific condition or persistent damage type
  * * to selected actors or the entire party.
- * * Targeting: Auto-detects selected tokens or defaults to Party folder/PC actors.
- * * Updated for PF2e V12/V13
+ * * Targeting: Auto-detects selected tokens or defaults to active party/PC actors.
+ * * Updated for PF2e V12/V13/V14
  */
 
 export const STATUS_EFFECT_MACRO_NAME = "Easy Add Status/Condition";
@@ -27,22 +27,12 @@ export async function addStatusEffect() {
         }
         targetLabel = targetActors.map(a => a.name).join(", ");
     } else {
-        const actorFolders = game.folders.filter(f => f.type === 'Actor');
-        const partyFolder = actorFolders.find(f => (f.name || '').toLowerCase() === 'party');
-
-        if (partyFolder) {
-            for (const actor of game.actors.values()) {
-                if (actor.folder?.id === partyFolder.id) {
-                    targetActors.push(actor);
-                }
-            }
-        }
-
-        if (targetActors.length === 0) {
-            for (const actor of game.actors.values()) {
-                if (actor && (actor.type === 'character' || actor.hasPlayerOwner)) {
-                    targetActors.push(actor);
-                }
+        if (game.actors.party) {
+            targetActors = Array.from(game.actors.party.members);
+        } else {
+            targetActors = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+            if (targetActors.length === 0) {
+                targetActors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
             }
         }
     }
@@ -223,11 +213,13 @@ export async function addStatusEffect() {
 
         // Report Results
         if (appliedResults.length > 0) {
-            let chatContent = '<strong>Applied Status Effects:</strong><br>';
+            let chatContent = '<strong>Applied Status Effects:</strong><ul>';
 
             for (const message of appliedResults) {
-                chatContent += `— ${message}<br>`;
+                chatContent += ` <li>${message}</li>`;
             }
+
+            chatContent += '</ul>';
 
             ChatMessage.create({
                 content: chatContent,

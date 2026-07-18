@@ -13,17 +13,15 @@ export const RANDOM_ENCOUNTER_MACRO_ICON = "icons/environment/creatures/golem-st
  */
 export async function generateEncounter() {
     if (!game.user.isGM) {
-        ui.notifications.warn("Only the GM can generate encounters!");
+        ui.notifications.warn("Sorry, only the GM can generate encounters.");
         return;
     }
 
     // 1. Validate that the GM is actually viewing a scene
     const targetScene = canvas.scene;
     if (!targetScene) {
-        return ui.notifications.error("You must be viewing an active scene to generate an encounter on it.");
+        return ui.notifications.error("You must be on a scene to generate an encounter on it.");
     }
-
-    ui.notifications.info("Starting Encounter Generation...");
 
     // Get default Party Data to populate the UI fields
     let defaultCharacters = [];
