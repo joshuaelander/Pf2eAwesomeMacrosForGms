@@ -6,7 +6,7 @@
 
 export const SCENE_FOLDER_NAME = "Random Encounters";
 export const RANDOM_ENCOUNTER_MACRO_NAME = "Create Random Encounter";
-export const RANDOM_ENCOUNTER_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/random-encounter-icon.png"; // Icon url e.g. "icons/svg/d20.svg" 
+export const RANDOM_ENCOUNTER_MACRO_ICON = "icons/environment/creatures/golem-stone-purple.webp"; // Icon url e.g. "icons/svg/d20.svg" 
 
 /**
  * Gets an existing Scene folder by name, or creates it if it doesn't exist.

@@ -10,7 +10,7 @@
  */
 
 export const EXPERIENCE_AWARD_MACRO_NAME = "Award Experience Points (XP)";
-export const EXPERIENCE_AWARD_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/award-xp.png";
+export const EXPERIENCE_AWARD_MACRO_ICON = "icons/magic/light/explosion-beam-impact-silhouette.webp";
 
 // Define the main asynchronous function for the macro
 export async function awardXP() {

@@ -3,7 +3,7 @@
 // A private chat message listing the removed enemies and their filtered inventory is sent to the GM.
 
 export const COMBAT_CLEANUP_MACRO_NAME = "Quick Combat Cleanup";
-export const COMBAT_CLEANUP_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-combat-cleanup.png";
+export const COMBAT_CLEANUP_MACRO_ICON = "icons/tools/hand/broom-straw-brown.webp";
 
 export async function cleanupCombat() {
     // Configuration for PF2e HP check

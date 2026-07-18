@@ -8,7 +8,7 @@
  */
 
 export const JOURNAL_EXPORT_MACRO_NAME = "Export Journals";
-export const JOURNAL_EXPORT_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/journal-to-html-export.png"
+export const JOURNAL_EXPORT_MACRO_ICON = "icons/svg/door-exit.svg"
 
 // --- UTILITY FUNCTIONS ---
 /**

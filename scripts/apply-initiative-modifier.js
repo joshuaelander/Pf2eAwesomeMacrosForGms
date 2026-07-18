@@ -5,7 +5,7 @@
  * * Requirements: Must be executed when a Combat/Encounter is active.
  */
 export const INITIATIVE_MODIFIER_MACRO_NAME = "Apply Initiative Modifier";
-export const INITIATIVE_MODIFIER_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/apply-initiative-modifier.png";
+export const INITIATIVE_MODIFIER_MACRO_ICON = "icons/magic/time/clock-stopwatch-white-blue.webp";
 
 export async function applyInitiativeModifier() {
     const macroName = INITIATIVE_MODIFIER_MACRO_NAME;

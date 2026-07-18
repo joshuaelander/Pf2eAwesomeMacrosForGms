@@ -5,7 +5,7 @@
 */
 
 export const QUICK_RECALL_MACRO_NAME = "Quick Recall Knowledge";
-export const QUICK_RECALL_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-recall-knowledge.png"
+export const QUICK_RECALL_MACRO_ICON = "icons/magic/symbols/question-stone-yellow.webp"
 
 /**
  * Create the secret aggregated chat message for multiple recall knowledge checks.
@@ -84,9 +84,6 @@ async function performRecallKnowledge(html) {
     }
 
     // Determine target actors:
-    // If there are controlled tokens, use their actors (unique).
-    // Otherwise, look for an actor folder named "party" (case-insensitive) and use actors in it.
-    // If no such folder or it's empty, fall back to player characters / actors with player owners.
     const controlled = canvas?.tokens?.controlled ?? [];
     let targetActors = [];
 
@@ -100,26 +97,11 @@ async function performRecallKnowledge(html) {
             }
         }
     } else {
-        // Try to find an actor Folder named "party" (case-insensitive)
-        const actorFolders = game.folders.filter(f => f.type === 'Actor');
-        const partyFolder = actorFolders.find(f => (f.name || '').toLowerCase() === 'party');
-
-        if (partyFolder) {
-            for (const actor of game.actors.values()) {
-                if (actor.folder?.id === partyFolder.id) {
-                    targetActors.push(actor);
-                }
-            }
-        }
-
-        // Fallback: if no party folder or it's empty, use player characters / actors with player owners
-        if (targetActors.length === 0) {
-            for (const actor of game.actors.values()) {
-                if (actor && (actor.type === 'character' || actor.hasPlayerOwner)) {
-                    // actor.hasPlayerOwner is true when at least one player has ownership
-                    targetActors.push(actor);
-                }
-            }
+        if (game.actors.party) {
+            targetActors = Array.from(game.actors.party.members);
+        } else {
+            targetActors = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+            if (targetActors.length === 0) targetActors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
         }
     }
 
@@ -198,7 +180,7 @@ function calculateDegreeOfSuccess(total, dc) {
  * Open the Recall Knowledge dialog.
  * Note: Actor selection is driven by controlled tokens. If none are selected, checks will be run for the whole party.
  */
-export function openRecallKnowledgeDialog() {
+export function openGmRecallKnowledgeDialog() {
     // Static PF2e skill map (adjust if you need additional skills)
     const skills = {
         'arcana': 'Arcana',
@@ -219,16 +201,9 @@ export function openRecallKnowledgeDialog() {
         skillOptions += `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`;
     }
 
-    // Determine if a "party" actor folder exists (case-insensitive)
-    const actorFolders = game.folders.filter(f => f.type === 'Actor');
-    const partyFolder = actorFolders.find(f => (f.name || '').toLowerCase() === 'party');
-
-    // Note: We do not include an actor select. The module uses the currently controlled tokens (supports multiple).
-    // If no tokens are controlled, it falls back to the party (player characters) or the 'party' actor folder if present.
     const selectionNote = (canvas?.tokens?.controlled?.length > 0)
         ? `<p><em>Using ${canvas.tokens.controlled.length} selected token(s).</em></p>`
-        : (partyFolder ? `<p><em>No tokens selected — will use actors in the "${escapeHtml(partyFolder.name)}" folder.</em></p>`
-            : `<p><em>No tokens selected — will use the whole party (player characters / actors with player owners).</em></p>`);
+        : `<p><em>No tokens selected — will use the active party (Alliance: Party).</em></p>`;
 
     const content = `
     <form>

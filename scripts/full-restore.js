@@ -13,7 +13,7 @@
  */
 
 export const FULL_RESTORE_MACRO_NAME = "Full Restore";
-export const FULL_RESTORE_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/full-restore.png"
+export const FULL_RESTORE_MACRO_ICON = "icons/svg/sleep.svg"
 
 // --- DIALOG POPULATION AND LAUNCH ---
 export function openFullRestoreDialog() {
@@ -222,7 +222,7 @@ async function executeRest(html, actorsToUpdate) {
         let chatContent = '<strong>Party Rest Report:</strong><br>';
 
         for (const actorResult of results) {
-            chatContent += `— <strong>${actorResult.name}</strong>: ${actorResult.changes.join(", ")} restored.<br>`;
+            chatContent += `<strong>${actorResult.name}</strong>: ${actorResult.changes.join(", ")} restored.<br>`;
         }
 
         ChatMessage.create({

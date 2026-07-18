@@ -2,7 +2,7 @@
 // Use this macro to quickly change the size of a selected token between common PF2e sizes.
 
 export const QUICK_TOKEN_RESIZER_MACRO_NAME = "Quick Token Resizer";
-export const QUICK_TOKEN_RESIZER_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/quick-token-resizer.png";
+export const QUICK_TOKEN_RESIZER_MACRO_ICON = "icons/magic/control/silhouette-grow-shrink-tan.webp";
 
 /**
  * Maps PF2e size keys (lowercase) to the corresponding grid dimensions (width/height).

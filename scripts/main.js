@@ -16,7 +16,7 @@ const MACRO_FOLDER_COLOR = "#9c0000"; // Dark red for visibility
 // Note: To set a custom icon for the macro, update MACRO_ICON inside 'random_encounter_macro.js'
 // Example Custom Icon Path: const MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/generator-icon.webp";
 import { generateEncounter, RANDOM_ENCOUNTER_MACRO_NAME, RANDOM_ENCOUNTER_MACRO_ICON } from './random-encounter-macro.js';
-import { openRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
+import { openGmRecallKnowledgeDialog, QUICK_RECALL_MACRO_NAME, QUICK_RECALL_MACRO_ICON } from './quick-recall-knowledge.js';
 import { openJournalExportDialog, JOURNAL_EXPORT_MACRO_NAME, JOURNAL_EXPORT_MACRO_ICON } from './journal-to-html-export.js';
 import { openFullRestoreDialog, FULL_RESTORE_MACRO_NAME, FULL_RESTORE_MACRO_ICON } from './full-restore.js';
 import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_ICON } from './quick-token-resizer.js';
@@ -25,6 +25,7 @@ import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MOD
 import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } from './award-xp.js';
 import { addStatusEffect, STATUS_EFFECT_MACRO_NAME, STATUS_EFFECT_MACRO_ICON } from './easy-add-conditions.js';
 import { addExplorationActivity, EXPLORATION_ACTIVITY_MACRO_NAME, EXPLORATION_ACTIVITY_MACRO_ICON } from './easy-exploration.js';
+import { openSecretCheckDialog, QUICK_SECRET_MACRO_NAME, QUICK_SECRET_MACRO_ICON } from './quick-secret-check.js'
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -98,19 +99,20 @@ async function createMacroDocument(name, icon, command, folderId) {
 // --- 3. HOOKS AND INITIALIZATION ---
 Hooks.once('ready', async () => {
     // Define a global namespace for module functions
-    game.pf2eAwedomeMacros = game.pf2eAwedomeMacros || {};
+    game.pf2eAwesomeMacros = game.pf2eAwesomeMacros || {};
 
     // Register Global Functions 
-    game.pf2eAwedomeMacros.generateEncounter = generateEncounter;
-    game.pf2eAwedomeMacros.openRecallKnowledgeDialog = openRecallKnowledgeDialog;
-    game.pf2eAwedomeMacros.openJournalExportDialog = openJournalExportDialog;
-    game.pf2eAwedomeMacros.openFullRestoreDialog = openFullRestoreDialog;
-    game.pf2eAwedomeMacros.resizeToken = resizeToken;
-    game.pf2eAwedomeMacros.cleanupCombat = cleanupCombat;
-    game.pf2eAwedomeMacros.applyInitiativeModifier = applyInitiativeModifier;
-    game.pf2eAwedomeMacros.awardXP = awardXP;
-    game.pf2eAwedomeMacros.addStatusEffect = addStatusEffect;
-    game.pf2eAwedomeMacros.addExplorationActivity = addExplorationActivity;
+    game.pf2eAwesomeMacros.generateEncounter = generateEncounter;
+    game.pf2eAwesomeMacros.openGmRecallKnowledgeDialog = openGmRecallKnowledgeDialog;
+    game.pf2eAwesomeMacros.openJournalExportDialog = openJournalExportDialog;
+    game.pf2eAwesomeMacros.openFullRestoreDialog = openFullRestoreDialog;
+    game.pf2eAwesomeMacros.resizeToken = resizeToken;
+    game.pf2eAwesomeMacros.cleanupCombat = cleanupCombat;
+    game.pf2eAwesomeMacros.applyInitiativeModifier = applyInitiativeModifier;
+    game.pf2eAwesomeMacros.awardXP = awardXP;
+    game.pf2eAwesomeMacros.addStatusEffect = addStatusEffect;
+    game.pf2eAwesomeMacros.addExplorationActivity = addExplorationActivity;
+    game.pf2eAwesomeMacros.openSecretCheckDialog = openSecretCheckDialog;
 
     // Get or Create the Target Folder
     let targetFolderId = null;
@@ -119,78 +121,84 @@ Hooks.once('ready', async () => {
         if (folder) {
             targetFolderId = folder.id;
         }
+
+        // Programmatically create the macro buttons 
+        createMacroDocument(
+            RANDOM_ENCOUNTER_MACRO_NAME,
+            RANDOM_ENCOUNTER_MACRO_ICON,
+            `game.pf2eAwesomeMacros.generateEncounter();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            QUICK_RECALL_MACRO_NAME, 
+            QUICK_RECALL_MACRO_ICON, 
+            `game.pf2eAwesomeMacros.openGmRecallKnowledgeDialog();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            JOURNAL_EXPORT_MACRO_NAME,
+            JOURNAL_EXPORT_MACRO_ICON,
+            `game.pf2eAwesomeMacros.openJournalExportDialog();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            FULL_RESTORE_MACRO_NAME,
+            FULL_RESTORE_MACRO_ICON,
+            `game.pf2eAwesomeMacros.openFullRestoreDialog();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            QUICK_TOKEN_RESIZER_MACRO_NAME,
+            QUICK_TOKEN_RESIZER_MACRO_ICON,
+            `game.pf2eAwesomeMacros.resizeToken();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            COMBAT_CLEANUP_MACRO_NAME,
+            COMBAT_CLEANUP_MACRO_ICON,
+            `game.pf2eAwesomeMacros.cleanupCombat();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            INITIATIVE_MODIFIER_MACRO_NAME,
+            INITIATIVE_MODIFIER_MACRO_ICON,
+            `game.pf2eAwesomeMacros.applyInitiativeModifier();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            EXPERIENCE_AWARD_MACRO_NAME,
+            EXPERIENCE_AWARD_MACRO_ICON,
+            `game.pf2eAwesomeMacros.awardXP();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            STATUS_EFFECT_MACRO_NAME,
+            STATUS_EFFECT_MACRO_ICON,
+            `game.pf2eAwesomeMacros.addStatusEffect();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            EXPLORATION_ACTIVITY_MACRO_NAME,
+            EXPLORATION_ACTIVITY_MACRO_ICON,
+            `game.pf2eAwesomeMacros.addExplorationActivity();`,
+            targetFolderId
+        );
+
+        createMacroDocument(
+            QUICK_SECRET_MACRO_NAME,
+            QUICK_SECRET_MACRO_ICON,
+            `game.pf2eAwesomeMacros.openSecretCheckDialog();`,
+            targetFolderId
+        );
     }
-
-    // Programmatically create the macro buttons 
-    createMacroDocument(
-        RANDOM_ENCOUNTER_MACRO_NAME,
-        RANDOM_ENCOUNTER_MACRO_ICON,
-        `game.pf2eAwedomeMacros.generateEncounter();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        QUICK_RECALL_MACRO_NAME, 
-        QUICK_RECALL_MACRO_ICON, 
-        `game.pf2eAwedomeMacros.openRecallKnowledgeDialog();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        JOURNAL_EXPORT_MACRO_NAME,
-        JOURNAL_EXPORT_MACRO_ICON,
-        `game.pf2eAwedomeMacros.openJournalExportDialog();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        FULL_RESTORE_MACRO_NAME,
-        FULL_RESTORE_MACRO_ICON,
-        `game.pf2eAwedomeMacros.openFullRestoreDialog();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        QUICK_TOKEN_RESIZER_MACRO_NAME,
-        QUICK_TOKEN_RESIZER_MACRO_ICON,
-        `game.pf2eAwedomeMacros.resizeToken();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        COMBAT_CLEANUP_MACRO_NAME,
-        COMBAT_CLEANUP_MACRO_ICON,
-        `game.pf2eAwedomeMacros.cleanupCombat();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        INITIATIVE_MODIFIER_MACRO_NAME,
-        INITIATIVE_MODIFIER_MACRO_ICON,
-        `game.pf2eAwedomeMacros.applyInitiativeModifier();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        EXPERIENCE_AWARD_MACRO_NAME,
-        EXPERIENCE_AWARD_MACRO_ICON,
-        `game.pf2eAwedomeMacros.awardXP();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        STATUS_EFFECT_MACRO_NAME,
-        STATUS_EFFECT_MACRO_ICON,
-        `game.pf2eAwedomeMacros.addStatusEffect();`,
-        targetFolderId
-    );
-
-    createMacroDocument(
-        EXPLORATION_ACTIVITY_MACRO_NAME,
-        EXPLORATION_ACTIVITY_MACRO_ICON,
-        `game.pf2eAwedomeMacros.addExplorationActivity();`,
-        targetFolderId
-    );
-
     console.log('PF2e Awesome Macros | All module logic and macros initialized.');
 });

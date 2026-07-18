@@ -7,7 +7,7 @@
  */
 
 export const STATUS_EFFECT_MACRO_NAME = "Easy Add Status/Condition";
-export const STATUS_EFFECT_MACRO_ICON = "modules/pf2e-awesome-macros-for-gms/assets/easy-add-condition.png";
+export const STATUS_EFFECT_MACRO_ICON = "systems/pf2e/icons/conditions/doomed.webp";
 
 // --------------- MAIN MACRO LOGIC ---------------
 export async function addStatusEffect() {
