@@ -18,7 +18,7 @@ import { resizeToken, QUICK_TOKEN_RESIZER_MACRO_NAME, QUICK_TOKEN_RESIZER_MACRO_
 import { cleanupCombat, COMBAT_CLEANUP_MACRO_NAME, COMBAT_CLEANUP_MACRO_ICON } from './quick-combat-cleanup.js';
 import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MODIFIER_MACRO_ICON } from './apply-initiative-modifier.js';
 import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } from './award-xp.js';
-import { addStatusEffect, STATUS_EFFECT_MACRO_NAME, STATUS_EFFECT_MACRO_ICON } from './easy-add-conditions.js';
+import { addCondition, CONDITION_MACRO_NAME, CONDITION_MACRO_ICON } from './easy-add-conditions.js';
 import { addExplorationActivity, EXPLORATION_ACTIVITY_MACRO_NAME, EXPLORATION_ACTIVITY_MACRO_ICON } from './easy-exploration.js';
 import { openSecretCheckDialog, QUICK_SECRET_MACRO_NAME, QUICK_SECRET_MACRO_ICON } from './quick-secret-check.js'
 
@@ -104,7 +104,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.cleanupCombat = cleanupCombat;
     game.pf2eAwesomeMacros.applyInitiativeModifier = applyInitiativeModifier;
     game.pf2eAwesomeMacros.awardXP = awardXP;
-    game.pf2eAwesomeMacros.addStatusEffect = addStatusEffect;
+    game.pf2eAwesomeMacros.addCondition = addCondition;
     game.pf2eAwesomeMacros.addExplorationActivity = addExplorationActivity;
     game.pf2eAwesomeMacros.openSecretCheckDialog = openSecretCheckDialog;
 
@@ -167,9 +167,9 @@ Hooks.once('ready', async () => {
         );
 
         createMacroDocument(
-            STATUS_EFFECT_MACRO_NAME,
-            STATUS_EFFECT_MACRO_ICON,
-            `game.pf2eAwesomeMacros.addStatusEffect();`,
+            CONDITION_MACRO_NAME,
+            CONDITION_MACRO_ICON,
+            `game.pf2eAwesomeMacros.addCondition();`,
             targetFolderId
         );
 

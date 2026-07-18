@@ -90,7 +90,7 @@ export async function addExplorationActivity() {
         <label>Select Activity:</label>
         <div class="exp-macro-row">
             <select id="exploration-select" style="width: 100%">
-                <option value="CLEAR">-- Stop Exploring --</option>
+                <option value="CLEAR">-- Stop Exploration Activity --</option>
                 
                 <optgroup label="Character Abilities (On Sheet)">
                     ${characterOptions.map(opt => `<option value="${opt.uuid}">${opt.name}</option>`).join("")}
@@ -146,9 +146,6 @@ export async function addExplorationActivity() {
                 if (existingItem) {
                     finalItemId = existingItem.id;
                 } else {
-                    // IMPORT REQUIRED: Actor doesn't have this activity yet.
-                    ui.notifications.info(`Adding ${name} to ${token.name}'s sheet...`);
-
                     // Fetch from Compendium
                     const sourceItem = await fromUuid(uuid);
                     if (!sourceItem) throw new Error("Could not find item in compendium.");
@@ -177,7 +174,7 @@ export async function addExplorationActivity() {
                         <img src="${token.document.texture.src}" style="width: 40px; height: 40px; border: none; object-fit: cover;" />
                     </div>
                     <div>
-                        <strong>${token.name}</strong> is exploring:<br/>
+                        <strong>${token.name}</strong>'s exploration activity:<br/>
                         <span style="font-weight: bold; font-size: 1.1em; color: var(--color-text-hyperlink);">
                             ${name}
                         </span>
@@ -187,7 +184,7 @@ export async function addExplorationActivity() {
                 flags: { pf2e: { context: { type: "exploration-selection" } } }
             });
 
-            ui.notifications.info(`Set ${token.name}'s exploration to ${name}`);
+            ui.notifications.info(`Set ${token.name}'s exploration activity to ${name}`);
 
         } catch (err) {
             console.error(`Error setting exploration:`, err);

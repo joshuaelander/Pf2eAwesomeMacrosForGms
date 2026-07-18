@@ -1,16 +1,16 @@
 /**
- * PF2e Add Status Effect
+ * PF2e Easy Add Condition
  * * A macro to add a specific condition or persistent damage type
  * * to selected actors or the entire party.
  * * Targeting: Auto-detects selected tokens or defaults to active party/PC actors.
  * * Updated for PF2e V12/V13/V14
  */
 
-export const STATUS_EFFECT_MACRO_NAME = "Easy Add Status/Condition";
-export const STATUS_EFFECT_MACRO_ICON = "systems/pf2e/icons/conditions/doomed.webp";
+export const CONDITION_MACRO_NAME = "Easy Add Condition";
+export const CONDITION_MACRO_ICON = "systems/pf2e/icons/conditions/doomed.webp";
 
 // --------------- MAIN MACRO LOGIC ---------------
-export async function addStatusEffect() {
+export async function addCondition() {
     // 1. Determine Actors (Run immediately to populate Dialog)
     const controlled = canvas?.tokens?.controlled ?? [];
     let targetActors = [];
@@ -57,27 +57,43 @@ export async function addStatusEffect() {
         <div class="target-list">${targetLabel}</div>
     </div>
 
-    <div class="pf2e-status-header">Status Effect Details</div>
+    <div class="pf2e-status-header">Condition Details</div>
     
     <div class="form-group">
-        <label for="conditionName">Status/Condition:</label>
+        <label for="conditionName">Condition:</label>
         <select id="conditionName" name="conditionName">
             <option value="persistent-damage">Persistent Damage</option>
-            <option value="wounded">Wounded (Ranked)</option>
-            <option value="dying">Dying (Ranked)</option>
-            <option value="clumsy">Clumsy (Ranked)</option>
-            <option value="drained">Drained (Ranked)</option>
+            <option value="wounded">Wounded</option>
+            <option value="dying">Dying</option>
+            <option value="clumsy">Clumsy</option>
+            <option value="drained">Drained</option>
             <option value="fatigued">Fatigued</option>
-            <option value="frightened">Frightened (Ranked)</option>
-            <option value="sickened">Sickened (Ranked)</option>
+            <option value="frightened">Frightened</option>
+            <option value="sickened">Sickened</option>
             <option value="off-guard">Off-Guard (Flat-Footed)</option>
-            <option value="stupefied">Stupefied (Ranked)</option>
-            <option value="enfeebled">Enfeebled (Ranked)</option>
+            <option value="stupefied">Stupefied</option>
+            <option value="enfeebled">Enfeebled</option>
+            <option value="slowed">Slowed</option>
+            <option value="stunned">Stunned</option>
+            <option value="unconscious">Unconscious</option>
+            <option value="blinded">Blinded</option>
+            <option value="deafened">Deafened</option>
+            <option value="invisible">Invisible</option>
+            <option value="paralyzed">Paralyzed</option>
+            <option value="petrified">Petrified</option>
+            <option value="restrained">Restrained</option>
+            <option value="grabbed">Grabbed</option>
+            <option value="prone">Prone</option>
+            <option value="dazzled">Dazzled</option>
+            <option value="confused">Confused</option>
+            <option value="quickened">Quickened</option>
+            <option value="undetected">Undetected</option>
+            <option value="fascinated">Fascinated</option>"
         </select>
     </div>
 
     <div class="form-group">
-        <label for="conditionValue">Value/Rank:</label>
+        <label for="conditionValue">Value:</label>
         <input type="number" id="conditionValue" name="conditionValue" value="1" min="1">
     </div>
 
@@ -90,7 +106,7 @@ export async function addStatusEffect() {
                 <option value="bludgeoning">Bludgeoning</option>
                 <option value="cold">Cold</option>
                 <option value="electricity">Electricity</option>
-                <option value="fire" selected>Fire (Burn)</option>
+                <option value="fire" selected>Fire</option>
                 <option value="force">Force</option>
                 <option value="mental">Mental</option>
                 <option value="piercing">Piercing</option>
@@ -99,7 +115,7 @@ export async function addStatusEffect() {
             </select>
         </div>
         <div class="form-group">
-            <label for="damageFormula">Damage Formula (e.g., 1d6):</label>
+            <label for="damageFormula">Damage Formula (e.g. 1d6):</label>
             <input type="text" id="damageFormula" name="damageFormula" value="1d6">
         </div>
     </div>
@@ -107,13 +123,13 @@ export async function addStatusEffect() {
 `;
 
     new Dialog({
-        title: "Apply Status/Condition",
+        title: "Apply Condition",
         content: content,
         buttons: {
             apply: {
                 icon: "<i class='fas fa-plus-circle'></i>",
-                label: "Apply Status",
-                callback: (html) => executeStatusAdd(html, targetActors)
+                label: "Apply Condition",
+                callback: (html) => executeConditionAdd(html, targetActors)
             },
             cancel: {
                 icon: "<i class='fas fa-times'></i>",
@@ -143,11 +159,11 @@ export async function addStatusEffect() {
     }).render(true);
 
     /**
-     * Executes the logic to apply the condition/status to the actors.
+     * Executes the logic to apply the condition to the actors.
      * @param {JQuery} html The dialog HTML element.
      * @param {ActorPF2e[]} actorsToUpdate The list of actors to target.
      */
-    async function executeStatusAdd(html, actorsToUpdate) {
+    async function executeConditionAdd(html, actorsToUpdate) {
         const conditionName = html.find('[name="conditionName"]').val();
         const conditionValue = parseInt(html.find('[name="conditionValue"]').val());
         const damageType = html.find('[name="damageType"]').val();
@@ -197,7 +213,7 @@ export async function addStatusEffect() {
                                 await condition.update({ "system.value.value": conditionValue });
                             }
                             const label = conditionName.capitalize();
-                            appliedResults.push(`${label} (Rank ${conditionValue}) to ${actor.name}`);
+                            appliedResults.push(`${label} ${conditionValue} to ${actor.name}`);
                         } else {
                             // For unranked conditions (like Fatigued, Off-Guard), just adding it (step 1) is enough
                             const label = conditionName.capitalize();
@@ -207,13 +223,13 @@ export async function addStatusEffect() {
                 }
             } catch (err) {
                 console.error(`Error applying condition to ${actor.name}:`, err);
-                ui.notifications.error(`Error applying to ${actor.name}. Check console.`);
+                ui.notifications.error(`Error applying condition to ${actor.name}. Check console.`);
             }
         }
 
         // Report Results
         if (appliedResults.length > 0) {
-            let chatContent = '<strong>Applied Status Effects:</strong><ul>';
+            let chatContent = '<strong>Applied Conditions:</strong><ul>';
 
             for (const message of appliedResults) {
                 chatContent += ` <li>${message}</li>`;
@@ -227,7 +243,7 @@ export async function addStatusEffect() {
             });
             ui.notifications.info(`Processed ${actorsToUpdate.length} actors.`);
         } else {
-            ui.notifications.info("No status effects were applied (or no changes needed).");
+            ui.notifications.info("No conditions were applied (or no changes needed).");
         }
     }
 }
