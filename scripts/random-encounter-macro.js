@@ -6,7 +6,7 @@
 
 export const SCENE_FOLDER_NAME = "Random Encounters";
 export const RANDOM_ENCOUNTER_MACRO_NAME = "Create Random Encounter";
-export const RANDOM_ENCOUNTER_MACRO_ICON = "icons/environment/creatures/golem-stone-purple.webp"; // Icon url e.g. "icons/svg/d20.svg" 
+export const RANDOM_ENCOUNTER_MACRO_ICON = "icons/environment/creatures/golem-stone-purple.webp";
 
 /**
  * Gets an existing Scene folder by name, or creates it if it doesn't exist.
@@ -16,13 +16,11 @@ async function getOrCreateSceneFolder() {
     let folder = game.folders.getName(SCENE_FOLDER_NAME);
 
     if (!folder) {
-        // Create the folder if it doesn't exist
         try {
             folder = await Folder.create({
                 name: SCENE_FOLDER_NAME,
                 type: 'Scene',
-                parent: null, // Create at the top level
-                // Optionally, you can set a color for this scene folder too: color: "#006400"
+                parent: null,
             });
             ui.notifications.info(`[PF2e Generator] Created Scene folder: "${SCENE_FOLDER_NAME}". Please place scenes inside it.`);
         } catch (err) {
@@ -46,27 +44,26 @@ export async function generateEncounter() {
     }
     ui.notifications.info("Starting Encounter Generation...");
 
-    // Get Party Data using modern PF2e standards
-    let characters = [];
+    // Get default Party Data to populate the UI fields[cite: 6]
+    let defaultCharacters = [];
     if (game.actors.party) {
-        characters = Array.from(game.actors.party.members);
+        defaultCharacters = Array.from(game.actors.party.members);
     } else {
-        characters = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
-        if (characters.length === 0) {
-            characters = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
+        defaultCharacters = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+        if (defaultCharacters.length === 0) {
+            defaultCharacters = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
         }
     }
 
-    if (characters.length === 0) {
-        return ui.notifications.error("No player characters found to scale encounter.");
+    let defaultApl = 1;
+    let defaultPartySize = 4;
+
+    if (defaultCharacters.length > 0) {
+        const levels = defaultCharacters.map(c => c.system.details.level.value);
+        const totalLevels = levels.reduce((a, b) => a + b, 0);
+        defaultApl = Math.round(totalLevels / defaultCharacters.length);
+        defaultPartySize = defaultCharacters.length;
     }
-
-    const levels = characters.map(c => c.system.details.level.value);
-    const totalLevels = levels.reduce((a, b) => a + b, 0);
-    const apl = Math.round(totalLevels / characters.length);
-    const partySize = characters.length;
-
-    console.log(`PF2e Generator | Party Size: ${partySize}, APL: ${apl}`);
 
     // --- Difficulty and Trait Selection Dialog ---
     const xpValues = {
@@ -77,59 +74,88 @@ export async function generateEncounter() {
         Extreme: 160
     };
 
+    const commonTraits = [
+        "Aberration", "Animal", "Beast", "Construct", "Dragon",
+        "Elemental", "Fey", "Fiend", "Fungus", "Humanoid",
+        "Ooze", "Plant", "Spirit", "Undead"
+    ];
+
     const dialogContent = `
+        <style>
+            .reg-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 0.9em; }
+            .reg-grid label { display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+            .reg-header { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid var(--color-border-dark-4); }
+            .reg-flex { display: flex; gap: 10px; margin-bottom: 10px; }
+            .reg-flex > div { flex: 1; }
+        </style>
         <form>
+            <div class="reg-flex">
+                <div>
+                    <label class="reg-header">Target APL:</label>
+                    <input type="number" name="apl" value="${defaultApl}" min="1" max="20" style="width: 100%; text-align: center;">
+                </div>
+                <div>
+                    <label class="reg-header">Party Size:</label>
+                    <input type="number" name="partySize" value="${defaultPartySize}" min="1" max="10" style="width: 100%; text-align: center;">
+                </div>
+            </div>
+
             <div class="form-group" style="padding: 5px 0;">
-                <label style="font-weight: bold;">Select Encounter Difficulty for Party of ${partySize} (APL: ${apl}):</label>
+                <label class="reg-header">Select Base Difficulty:</label>
                 <div class="form-fields" style="display: flex; flex-direction: column; gap: 5px; margin-top: 5px;">
                     ${Object.keys(xpValues).map(key => `
                         <label class="radio-label" style="display: flex; align-items: center; cursor: pointer;">
                             <input type="radio" name="difficulty" value="${key}" ${key === 'Moderate' ? 'checked' : ''} style="margin-right: 8px;">
-                            ${key} (${xpValues[key]} XP Base)
+                            ${key} (${xpValues[key]} Base XP)
                         </label>
                     `).join('')}
                 </div>
+                <p style="font-size: 0.8em; color: var(--color-text-dark-secondary); margin-top: 4px;">*XP budget automatically scales based on the Party Size above.</p>
             </div>
-            <hr>
             
-            <!-- Rarity Selection -->
             <div class="form-group" style="padding: 5px 0;">
-                <label style="font-weight: bold;">Filter by Monster Rarity:</label>
-                <div class="form-fields">
-                    <select name="rarity" style="width: 100%;">
-                        <option value="any">Any Rarity</option>
-                        <option value="common">Common</option>
-                        <option value="uncommon">Uncommon</option>
-                        <option value="rare">Rare</option>
-                        <option value="unique">Unique</option>
-                    </select>
+                <label class="reg-header">Filter by Rarity (Match Any):</label>
+                <div style="display: flex; gap: 12px; margin-top: 5px;">
+                    <label><input type="checkbox" name="rarity" value="common" checked> Common</label>
+                    <label><input type="checkbox" name="rarity" value="uncommon" checked> Uncommon</label>
+                    <label><input type="checkbox" name="rarity" value="rare"> Rare</label>
+                    <label><input type="checkbox" name="rarity" value="unique"> Unique</label>
                 </div>
             </div>
-            <hr>
 
             <div class="form-group" style="padding: 5px 0;">
-                <label style="font-weight: bold;">Optional: Shared Creature Trait (e.g., Fiend, Swarm, Fire):</label>
-                <div class="form-fields">
-                    <input type="text" name="trait" placeholder="Leave blank for random selection" style="width: 100%;">
+                <label class="reg-header">Creature Traits (Match Any):</label>
+                <div class="reg-grid" style="margin-top: 5px; margin-bottom: 8px;">
+                    ${commonTraits.map(trait => `<label><input type="checkbox" name="trait" value="${trait.toLowerCase()}"> ${trait}</label>`).join('')}
                 </div>
+                <input type="text" name="otherTrait" placeholder="Other Trait (e.g., fire, goblin)..." style="width: 100%;">
             </div>
         </form>
     `;
 
     // Use a Promise to handle the Dialog resolution asynchronously
-    const difficultyPromise = new Promise((resolve) => {
+    const dialogPromise = new Promise((resolve) => {
         new Dialog({
-            title: "Select Encounter Parameters",
+            title: "Configure Encounter Parameters",
             content: dialogContent,
             buttons: {
                 generate: {
                     icon: '<i class="fas fa-dice-d20"></i>',
                     label: "Generate",
                     callback: (html) => {
+                        const apl = parseInt(html.find('input[name="apl"]').val(), 10) || 1;
+                        const partySize = parseInt(html.find('input[name="partySize"]').val(), 10) || 4;
                         const selectedDifficulty = html.find('input[name="difficulty"]:checked').val();
-                        const selectedTrait = html.find('input[name="trait"]').val().trim();
-                        const selectedRarity = html.find('select[name="rarity"]').val();
-                        resolve({ selectedDifficulty, selectedTrait, selectedRarity });
+
+                        // Extract arrays of checked rarities and traits
+                        const selectedRarities = html.find('input[name="rarity"]:checked').map(function () { return this.value; }).get();
+                        const selectedTraits = html.find('input[name="trait"]:checked').map(function () { return this.value; }).get();
+
+                        // Add custom trait if provided
+                        const otherTrait = html.find('input[name="otherTrait"]').val().trim().toLowerCase();
+                        if (otherTrait) selectedTraits.push(otherTrait);
+
+                        resolve({ apl, partySize, selectedDifficulty, selectedRarities, selectedTraits });
                     }
                 },
                 cancel: {
@@ -140,31 +166,33 @@ export async function generateEncounter() {
             },
             default: "generate",
             close: () => resolve(null)
-        }, { width: 350 }).render(true);
+        }, { width: 450 }).render(true);
     });
 
-    const result = await difficultyPromise;
+    const result = await dialogPromise;
 
     if (!result) {
         ui.notifications.info("Encounter generation cancelled.");
         return;
     }
 
-    const { selectedDifficulty, selectedTrait, selectedRarity } = result;
+    const { apl, partySize, selectedDifficulty, selectedRarities, selectedTraits } = result;
+
+    if (selectedRarities.length === 0) {
+        return ui.notifications.error("You must select at least one creature rarity to generate an encounter.");
+    }
 
     const baseXp = xpValues[selectedDifficulty];
 
-    // Adjustment: 20xp per character variance from 4-person party
+    // Adjustment: 20xp per character variance from 4-person party[cite: 6]
     let xpBudget = baseXp + (20 * (partySize - 4));
 
-    // Safety cap: Ensure budget is at least Trivial XP for a 4-person party (40 XP)
+    // Safety cap: Ensure budget is at least Trivial XP for a 4-person party (40 XP)[cite: 6]
     if (xpBudget < 40) xpBudget = 40;
 
-    ui.notifications.info(`Generating a ${selectedDifficulty} encounter (Budget: ${xpBudget} XP). Theme: ${selectedTrait || 'Random'}. Rarity: ${selectedRarity.charAt(0).toUpperCase() + selectedRarity.slice(1)}.`);
-    // --- END: Difficulty and Trait Selection Dialog ---
+    ui.notifications.info(`Generating a ${selectedDifficulty} encounter (Budget: ${xpBudget} XP) for APL ${apl}.`);
 
-
-    // Get Random Scene
+    // Get Random Scene[cite: 6]
     const sceneFolder = await getOrCreateSceneFolder();
     if (!sceneFolder) {
         return ui.notifications.error(`Folder "${SCENE_FOLDER_NAME}" not found in Scenes directory.`);
@@ -177,26 +205,24 @@ export async function generateEncounter() {
 
     const targetScene = scenes[Math.floor(Math.random() * scenes.length)];
 
-    // Select Monsters - PASSING THE SELECTED TRAIT AND RARITY
-    const monstersToSpawn = await pickMonsters(apl, xpBudget, selectedTrait, selectedRarity);
+    // Select Monsters passing arrays
+    const monstersToSpawn = await pickMonsters(apl, xpBudget, selectedTraits, selectedRarities);
 
     if (monstersToSpawn.length === 0) {
-        let filterDetails = selectedTrait ? `trait "${selectedTrait}"` : "";
-        filterDetails += selectedRarity !== "any" ? (filterDetails ? " and " : "") + `rarity "${selectedRarity}"` : "";
-
-        ui.notifications.warn(`Could not find suitable monsters matching level and ${filterDetails || "filter criteria"}. Try broadening your search.`);
+        ui.notifications.warn(`Could not find suitable monsters matching APL ${apl} and your filter criteria. Try broadening your search.`);
         return;
     }
 
-    // Activate Scene and calculate cluster anchor
+    // Activate Scene and calculate cluster anchor[cite: 6]
     await targetScene.view();
 
-    // Calculate the raw center point for the monster spawn
     const clusterX = Math.floor(targetScene.dimensions.width / 2);
     const clusterY = Math.floor(targetScene.dimensions.height / 2);
 
-
     // --- Start Building GM Summary ---
+    const traitDisplay = selectedTraits.length > 0 ? selectedTraits.join(', ') : 'Any';
+    const rarityDisplay = selectedRarities.join(', ');
+
     const summaryHeader = `
         <h3 style="margin: 0; padding-bottom: 5px; border-bottom: 1px solid #ccc;">
             <i class="fas fa-dice-d20"></i> Random Encounter Report
@@ -204,6 +230,7 @@ export async function generateEncounter() {
         <p style="margin: 5px 0 0;"><strong>Scene:</strong> ${targetScene.name}</p>
         <p style="margin: 0;"><strong>Difficulty:</strong> <span style="font-weight: bold; color: #cc0000;">${selectedDifficulty} (${xpBudget} XP)</span></p>
         <p style="margin: 0;"><strong>APL:</strong> ${apl}, <strong>Party Size:</strong> ${partySize}</p>
+        <p style="margin: 0;"><strong>Traits:</strong> ${traitDisplay} | <strong>Rarity:</strong> ${rarityDisplay}</p>
     `;
 
     const monsterList = monstersToSpawn.map(m => {
@@ -219,13 +246,9 @@ export async function generateEncounter() {
             <p style="font-size: 0.85em; color: #777; margin: 0;">Tokens are spawned at the map center for GM placement.</p>
         </div>
     `;
-    // --- End Building GM Summary ---
 
-
-    // Wait for view transition
     setTimeout(async () => {
         let successfulSpawns = 0;
-        // Iterate with index 'i' to determine placement offset
         for (let i = 0; i < monstersToSpawn.length; i++) {
             const monsterData = monstersToSpawn[i];
             const spawned = await spawnMonster(monsterData, targetScene, clusterX, clusterY, i);
@@ -234,34 +257,31 @@ export async function generateEncounter() {
             }
         }
 
-        // Send GM-only chat message
         const gmUsers = game.users.filter(u => u.isGM).map(u => u.id);
 
         await ChatMessage.create({
             user: game.user.id,
-            speaker: { alias: "Encounter Generator" }, // Use alias for a cleaner look
+            speaker: { alias: "Encounter Generator" },
             content: summaryContent,
             whisper: gmUsers,
             flavor: "GM-Only Encounter Report"
         });
 
         ui.notifications.info(`Encounter generated with ${successfulSpawns} creatures!`);
-    }, 1000); // Increased delay
+    }, 1000);
 }
 
 /**
  * Filters and selects monsters based on APL, XP budget, and optional traits/rarity.
  * @param {number} apl - Average Party Level.
  * @param {number} budget - XP budget for the encounter.
- * @param {string} requiredTrait - Optional required trait string.
- * @param {string} requiredRarity - Optional required rarity string ('any', 'common', etc.).
+ * @param {string[]} requiredTraits - Array of requested traits. Empty means any.
+ * @param {string[]} requiredRarities - Array of requested rarities.
  * @returns {Promise<Actor[]>} Array of selected monster Actors.
  */
-export async function pickMonsters(apl, budget, requiredTrait = "", requiredRarity = "any") {
+export async function pickMonsters(apl, budget, requiredTraits = [], requiredRarities = []) {
     const packKeys = ['pf2e.pathfinder-monster-core', 'pf2e.pathfinder-bestiary'];
     let candidates = [];
-    const traitLower = requiredTrait.toLowerCase();
-    const rarityLower = requiredRarity.toLowerCase();
 
     for (const key of packKeys) {
         const pack = game.packs.get(key);
@@ -274,24 +294,22 @@ export async function pickMonsters(apl, budget, requiredTrait = "", requiredRari
                 i.system.details.level.value <= (apl + 2)
             );
 
-            if (rarityLower !== "any") {
+            // Filter by selected rarities
+            if (requiredRarities.length > 0) {
                 valid = valid.filter(i => {
                     const monsterRarity = i.system.traits?.rarity?.toLowerCase() || 'common';
-                    return monsterRarity === rarityLower;
+                    return requiredRarities.includes(monsterRarity);
                 });
             }
 
-            if (traitLower) {
-                valid = valid.filter(i => i.system.traits?.value?.includes(traitLower));
-
-                if (valid.length === 0) {
-                    valid = index.filter(i =>
-                        i.type === 'npc' &&
-                        i.system.details.level.value >= (apl - 3) &&
-                        i.system.details.level.value <= (apl + 2) &&
-                        i.name.toLowerCase().includes(traitLower)
-                    );
-                }
+            // Filter by selected traits (OR logic - monster must have at least one of the selected traits)
+            if (requiredTraits.length > 0) {
+                valid = valid.filter(i => {
+                    const sysTraits = i.system.traits?.value || [];
+                    const hasTraitMatch = requiredTraits.some(rt => sysTraits.includes(rt));
+                    const hasNameMatch = requiredTraits.some(rt => i.name.toLowerCase().includes(rt));
+                    return hasTraitMatch || hasNameMatch;
+                });
             }
 
             candidates = candidates.concat(valid.map(i => ({ ...i, pack: key })));
@@ -305,27 +323,27 @@ export async function pickMonsters(apl, budget, requiredTrait = "", requiredRari
     let attempts = 0;
 
     let selectedUniqueActorIds = new Set();
-    let selectedTraits = [];
+    let selectedTraitsList = []; // Used internally for synergy logic
 
     while (currentSpent < budget && attempts < 100) {
         attempts++;
         let pick = null;
 
-        // Strategy 1 (Consistency): 70% chance to reuse an already selected monster type
+        // Strategy 1 (Consistency): 70% chance to reuse an already selected monster type[cite: 6]
         if (selectedUniqueActorIds.size > 0 && Math.random() < 0.7) {
             const reusableIds = Array.from(selectedUniqueActorIds);
             const reusableId = reusableIds[Math.floor(Math.random() * reusableIds.length)];
             pick = candidates.find(c => c._id === reusableId);
         }
 
-        // Strategy 2 (Synergy/New Monster): 30% chance or fallback
+        // Strategy 2 (Synergy/New Monster): 30% chance or fallback[cite: 6]
         if (!pick) {
             let candidateList = candidates;
 
-            if (selectedTraits.length > 0) {
+            if (selectedTraitsList.length > 0) {
                 const systemTraitsToExclude = new Set(['common', 'uncommon', 'rare', 'unique']);
-                const commonTraits = selectedTraits.filter((t, i) =>
-                    selectedTraits.indexOf(t) === i && !systemTraitsToExclude.has(t)
+                const commonTraits = selectedTraitsList.filter((t, i) =>
+                    selectedTraitsList.indexOf(t) === i && !systemTraitsToExclude.has(t)
                 );
 
                 const synergisticCandidates = candidates.filter(c =>
@@ -363,7 +381,7 @@ export async function pickMonsters(apl, budget, requiredTrait = "", requiredRari
                 selectedUniqueActorIds.add(pick._id);
 
                 if (pick.system.traits?.value) {
-                    selectedTraits.push(...pick.system.traits.value);
+                    selectedTraitsList.push(...pick.system.traits.value);
                 }
             }
         }
@@ -398,7 +416,7 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
         return false;
     }
 
-    const gridSize = scene.grid.size || 100; // v14 FIX: Ensure grid size always has a numeric fallback
+    const gridSize = scene.grid.size || 100;
     const tokensPerRow = 5;
     const spacing = 2;
 
@@ -411,8 +429,6 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
     let x = anchorX + offsetX;
     let y = anchorY + offsetY;
 
-    // v14 FIX: 'scene.grid.w' and 'scene.grid.h' were removed. 
-    // Snapping logic now calculates purely based on scene.grid.size.
     if (scene.grid.type !== CONST.GRID_TYPES.NONE) {
         x = gridSize * Math.floor(x / gridSize);
         y = gridSize * Math.floor(y / gridSize);
@@ -425,10 +441,9 @@ export async function spawnMonster(compendiumActor, scene, anchorX, anchorY, spa
         x: x,
         y: y,
         elevation: 0,
-        hidden: true // Tokens are spawned hidden
+        hidden: true
     });
 
-    // v14 FIX: Always pass token document as a raw object to createEmbeddedDocuments
     await scene.createEmbeddedDocuments("Token", [tokenData.toObject()]);
     return true;
 }
