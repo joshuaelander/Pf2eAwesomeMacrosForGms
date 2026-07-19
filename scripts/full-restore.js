@@ -3,7 +3,7 @@
  * * A macro to reset HP, remove Wounded/Fatigued conditions, reset Hero Points, 
  * and restore Spell Slots for the party.
  * * Options:
- * - Scope: Auto-detects selected tokens or defaults to Party folder/PC actors.
+ * - Scope: Auto-detects selected tokens or defaults to active party/PC actors.
  * - Reset Health: Heals to max HP.
  * - Remove Conditions: Removes "wounded" and "fatigued".
  * - Reset Hero Points: Sets Hero Points to 1.
@@ -33,25 +33,12 @@ export function openFullRestoreDialog() {
         // Create a comma-separated list of names
         targetLabel = targetActors.map(a => a.name).join(", ");
     } else {
-        // Try to find an actor Folder named "party" (case-insensitive)
-        const actorFolders = game.folders.filter(f => f.type === 'Actor');
-        const partyFolder = actorFolders.find(f => (f.name || '').toLowerCase() === 'party');
-
-        if (partyFolder) {
-            for (const actor of game.actors.values()) {
-                if (actor.folder?.id === partyFolder.id) {
-                    targetActors.push(actor);
-                }
-            }
-        }
-
-        // Fallback: if no party folder or it's empty, use player characters / actors with player owners
-        if (targetActors.length === 0) {
-            for (const actor of game.actors.values()) {
-                if (actor && (actor.type === 'character' || actor.hasPlayerOwner)) {
-                    // actor.hasPlayerOwner is true when at least one player has ownership
-                    targetActors.push(actor);
-                }
+        if (game.actors.party) {
+            targetActors = Array.from(game.actors.party.members);
+        } else {
+            targetActors = game.actors.filter(a => a.type === 'character' && (a.system?.details?.alliance === 'party' || a.alliance === 'party'));
+            if (targetActors.length === 0) {
+                targetActors = game.actors.filter(a => a.type === 'character' && a.hasPlayerOwner);
             }
         }
     }
@@ -219,7 +206,7 @@ async function executeRest(html, actorsToUpdate) {
 
     // Report Results
     if (results.length > 0) {
-        let chatContent = '<strong>Party Rest Report:</strong><br>';
+        let chatContent = '<h5>Party Full Restore:</h5>';
 
         for (const actorResult of results) {
             chatContent += `<strong>${actorResult.name}</strong>: ${actorResult.changes.join(", ")} restored.<br>`;
@@ -230,6 +217,6 @@ async function executeRest(html, actorsToUpdate) {
         });
         ui.notifications.info(`Successfully rested ${results.length} actors.`);
     } else {
-        ui.notifications.info("All targeted actors were already full/reset (or dead).");
+        ui.notifications.info("All targeted actors were already full (or dead).");
     }
 }

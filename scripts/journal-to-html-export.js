@@ -30,7 +30,7 @@ function saveDataToFile(content, contentType, fileName) {
  */
 function runJournalExport(folderId) {
     const allJournals = Array.from(game.journal.values());
-    
+
     // Determine which journals to export
     let journalsToExport = [];
     let exportTitle = "All Journals";
@@ -39,13 +39,13 @@ function runJournalExport(folderId) {
         // Get folders that are children of this parentId
         // (If parentId is null, we look for root folders)
         const childFolders = game.folders
-            .filter(f => f.type === "JournalEntry" && f.folder?.id === parentId)
+            .filter(f => f.type === "JournalEntry" && (f.folder?.id ?? null) === parentId)
             .sort((a, b) => a.sort - b.sort);
 
         // Get journals that are inside this specific folder
         // (If parentId is null, we look for root journals)
         const childJournals = allJournals
-            .filter(j => j.folder?.id === parentId)
+            .filter(j => (j.folder?.id ?? null) === parentId)
             .sort((a, b) => a.sort - b.sort);
 
         // Add journals to the list (Journals usually appear before subfolders in export logic)
@@ -60,9 +60,6 @@ function runJournalExport(folderId) {
     if (folderId === "all") {
         // Start at the root (null) to get everything
         collectSortedJournals(null);
-        // Note: The recursive function handles filtering game.folders, 
-        // but we need to ensure we grab root journals (j.folder === null) inside the function.
-        // The logic `f.folder?.id === parentId` works for null if parentId is null!
     } else {
         const selectedFolder = game.folders.get(folderId);
         if (!selectedFolder) {
@@ -123,26 +120,26 @@ function runJournalExport(folderId) {
         // Process Pages (V10+ structure)
         if (journal.pages && journal.pages.size > 0) {
             for (const page of journal.pages.values()) {
-                
+
                 // Only process text pages
                 if (page.type === "text" && page.text && page.text.content) {
-                    
+
                     const pageName = page.name || 'Untitled Page';
                     let pageContent = page.text.content;
-                    
+
                     // CLEANING LOGIC 
                     let cleanedContent = pageContent.replace(/<img[^>]*>/gi, ''); // 1. Remove <img> tags
-                    cleanedContent = cleanedContent.replace(/@Compendium.*?}/g, ''); // 2. Remove Compendium links
-                    
-                    // Keep link text from UUID tags, wrapped in a span
+                    cleanedContent = cleanedContent.replace(/@Compendium.*?}/gi, ''); // 2. Remove Compendium links
+
+                    // Keep link text from UUID tags, wrapped in a span (Made case-insensitive)
                     cleanedContent = cleanedContent.replace(
-                        /@UUID\[.*?\{([^}]+)\}\]/g, 
+                        /@UUID\[.*?\{([^}]+)\}\]/gi,
                         '<span class="uuid-text">$1</span>'
                     );
-                    
-                    // Contingency: Remove any remaining UUID tags without link text
+
+                    // Contingency: Remove any remaining UUID tags without link text (Made case-insensitive)
                     cleanedContent = cleanedContent.replace(
-                        /@UUID\[.*?\]/g, 
+                        /@UUID\[.*?\]/gi,
                         ''
                     );
 
@@ -154,7 +151,7 @@ function runJournalExport(folderId) {
                     journalBodyContent += `</div>`;
                 }
             }
-        } 
+        }
         journalBodyContent += `</div>`;
     }
 
@@ -192,7 +189,7 @@ export function openJournalExportDialog() {
 
     // Define the dialog content
     const dialogContent = `
-        <p>Select the folder you wish to export, or select "All Journals" to export everything.</p>
+        <p>Select the folder you wish to export or select "All Journals" to export everything.</p><br>
         <div class="form-group">
             <label>Journal Folder:</label>
             <select name="folderId" style="width:100%;">
@@ -203,7 +200,7 @@ export function openJournalExportDialog() {
 
     // Create and show the Foundry Dialog
     new Dialog({
-        title: "Journal Export Selection",
+        title: "Export Journals",
         content: dialogContent,
         buttons: {
             export: {
