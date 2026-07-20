@@ -160,7 +160,7 @@ export async function addCondition() {
 </form>
 `;
 
-    new Dialog({
+    let dialogRef = new Dialog({
         title: "Manage Conditions",
         content: content,
         buttons: {
@@ -174,6 +174,7 @@ export async function addCondition() {
                 label: "Cancel"
             }
         },
+        // ... (inside the dialog options)
         default: "execute",
         render: (html) => {
             const conditionSelect = html.find('[name="conditionName"]');
@@ -191,7 +192,6 @@ export async function addCondition() {
                 // Handle Mode Visibility
                 if (mode === 'clearAll') {
                     detailsSection.hide();
-                    return; // Stop evaluating further if hiding everything
                 } else {
                     detailsSection.show();
                 }
@@ -202,26 +202,32 @@ export async function addCondition() {
                     valueGroup.hide();
 
                     if (mode === 'remove') {
-                        formulaGroup.hide(); // Don't need a formula to remove it
+                        formulaGroup.hide();
                     } else {
                         formulaGroup.show();
                     }
                 } else {
                     pdOptions.hide();
                     if (mode === 'remove') {
-                        valueGroup.hide(); // Don't need a rank to remove it completely
+                        valueGroup.hide();
                     } else {
                         valueGroup.show();
                         valueInput.prop('disabled', false);
                     }
                 }
+
+                // --- THE NEW LINE ---
+                // Tell Foundry to recalculate the window height dynamically!
+                dialogRef.setPosition({ height: "auto" });
             }
 
             conditionSelect.on('change', updateVisibility);
             modeRadios.on('change', updateVisibility);
             updateVisibility(); // Init
         }
-    }).render(true);
+    });
+
+    dialogRef.render(true);
 
     /**
      * Executes the logic to apply or remove conditions.
