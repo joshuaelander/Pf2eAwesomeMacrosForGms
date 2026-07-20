@@ -4,7 +4,7 @@ Overview: A collection of very useful Foundry VTT macros for GMs to use in PF2e.
 Contents: \
 1.) Apply Initiative Modifier - Updates players initiatives easily after start of encounter	\
 2.) Award Xp - Award selected or all players xp	\
-3.) Easy Add Conditions  - Add conditions to selected or all players	\
+3.) Easy Add / Remove Conditions  - Add or remove conditions from selected or all players	\
 4.) Encounter Loot Generator - Generate random loot for encounters	\
 5.) Full Restore - Restore hp to full and heal certain conditions related to resting or healing \
 6.) Journal to HTML Export - Export a copy of the journal to help the GM to study before sessions \
