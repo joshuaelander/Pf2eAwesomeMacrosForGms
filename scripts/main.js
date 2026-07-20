@@ -19,8 +19,8 @@ import { cleanupCombat, COMBAT_CLEANUP_MACRO_NAME, COMBAT_CLEANUP_MACRO_ICON } f
 import { applyInitiativeModifier, INITIATIVE_MODIFIER_MACRO_NAME, INITIATIVE_MODIFIER_MACRO_ICON } from './apply-initiative-modifier.js';
 import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } from './award-xp.js';
 import { addCondition, CONDITION_MACRO_NAME, CONDITION_MACRO_ICON } from './easy-add-conditions.js';
-import { addExplorationActivity, EXPLORATION_ACTIVITY_MACRO_NAME, EXPLORATION_ACTIVITY_MACRO_ICON } from './easy-exploration.js';
 import { openSecretCheckDialog, QUICK_SECRET_MACRO_NAME, QUICK_SECRET_MACRO_ICON } from './quick-secret-check.js'
+import { generateEncounterLoot, ENCOUNTER_LOOT_MACRO_NAME, ENCOUNTER_LOOT_MACRO_ICON } from './encounter-loot-generator.js';
 
 // --- 2. HELPER FUNCTIONS ---
 
@@ -123,10 +123,9 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.applyInitiativeModifier = applyInitiativeModifier;
     game.pf2eAwesomeMacros.awardXP = awardXP;
     game.pf2eAwesomeMacros.addCondition = addCondition;
-    game.pf2eAwesomeMacros.addExplorationActivity = addExplorationActivity;
     game.pf2eAwesomeMacros.openSecretCheckDialog = openSecretCheckDialog;
+    game.pf2eAwesomeMacros.generateEncounterLoot = generateEncounterLoot;
 
-    // Get or Create the Target Folder
     if (game.user.isGM) {
         // Get the current version from your module.json
         const currentVersion = game.modules.get(MODULE_ID)?.version || "1.0.0";
@@ -200,16 +199,16 @@ Hooks.once('ready', async () => {
             );
 
             await createMacroDocument(
-                EXPLORATION_ACTIVITY_MACRO_NAME,
-                EXPLORATION_ACTIVITY_MACRO_ICON,
-                `game.pf2eAwesomeMacros.addExplorationActivity();`,
+                QUICK_SECRET_MACRO_NAME,
+                QUICK_SECRET_MACRO_ICON,
+                `game.pf2eAwesomeMacros.openSecretCheckDialog();`,
                 targetFolderId
             );
 
             await createMacroDocument(
-                QUICK_SECRET_MACRO_NAME,
-                QUICK_SECRET_MACRO_ICON,
-                `game.pf2eAwesomeMacros.openSecretCheckDialog();`,
+                ENCOUNTER_LOOT_MACRO_NAME,
+                ENCOUNTER_LOOT_MACRO_ICON,
+                `game.pf2eAwesomeMacros.generateEncounterLoot();`,
                 targetFolderId
             );
 
