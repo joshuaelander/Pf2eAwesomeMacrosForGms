@@ -5,7 +5,7 @@ Contents: \
 1.) Apply Initiative Modifier - Updates players initiatives easily after start of encounter	\
 2.) Award Xp - Award selected or all players xp	\
 3.) Easy Add Conditions  - Add conditions to selected or all players	\
-4.) Easy Exploration - Add exploration activites to selected player and post to chat \
+4.) Encounter Loot Generator - Generate random loot for encounters	\
 5.) Full Restore - Restore hp to full and heal certain conditions related to resting or healing \
 6.) Journal to HTML Export - Export a copy of the journal to help the GM to study before sessions \
 7.) Quick Combat Cleanup - Remove dead creatures bodies after combat and end the encounter. \
