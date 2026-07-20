@@ -48,12 +48,12 @@ export async function generateEncounterLoot() {
         }
     }
 
-    let defaultApl = 1;
+    let defaultPartyLevel = 1;
     let defaultPartySize = 4;
 
     if (characters.length > 0) {
         const levels = characters.map(c => c.system.details.level.value);
-        defaultApl = Math.round(levels.reduce((a, b) => a + b, 0) / characters.length);
+        defaultPartyLevel = Math.round(levels.reduce((a, b) => a + b, 0) / characters.length);
         defaultPartySize = characters.length;
     }
 
@@ -85,12 +85,12 @@ export async function generateEncounterLoot() {
     <div class="loot-gen-container">
         <div class="loot-flex">
             <div class="form-group">
-                <label>Party Level:</label>
-                <input type="number" id="lootApl" value="${defaultApl}" min="1" max="20" style="width: 100%;">
-            </div>
-            <div class="form-group">
                 <label>Party Size:</label>
                 <input type="number" id="lootPartySize" value="${defaultPartySize}" min="1" max="10" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label>Party Level:</label>
+                <input type="number" id="lootApl" value="${defaultPartyLevel}" min="1" max="20" style="width: 100%;">
             </div>
         </div>
 
@@ -157,25 +157,6 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
     // 2. Fetch Compendium Index (Optimized search)
     const index = await pack.getIndex({ fields: ["system.level.value", "system.price.value", "type", "system.traits.rarity"] });
 
-    // Filter index for potential items
-    const minConsumableLevel = Math.max(0, apl - 3);
-    const minPermLevel = Math.max(0, apl - 1);
-    const maxLevel = Math.min(20, apl + 1);
-
-    const validConsumables = index.filter(i => {
-        const isRightLevel = i.system?.level?.value >= minConsumableLevel && i.system?.level?.value <= maxLevel;
-        const rarity = i.system?.traits?.rarity || "common";
-
-        const isValidType = ["consumable", "treasure", "ammunition"].includes(i.type);
-
-        return isValidType && isRightLevel && ["common", "uncommon"].includes(rarity);
-    });
-    const validPermanents = index.filter(i => ["weapon", "armor", "equipment", "shield"].includes(i.type) && i.system?.level?.value >= minPermLevel && i.system?.level?.value <= maxLevel);
-
-    let itemsToSpawn = [];
-    let remainingBudget = budgetGp;
-    let selectedItemNames = [];
-
     // Helper to extract numeric GP value from PF2e item price object
     const getPriceInGp = (itemData) => {
         if (!itemData.system?.price?.value) return 0;
@@ -187,6 +168,36 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
         return totalGp;
     };
 
+    // Filter index for potential items (Now actively strips 0gp items)
+    const minConsumableLevel = Math.max(0, apl - 3);
+    const minPermLevel = Math.max(0, apl - 1);
+    const maxLevel = Math.min(20, apl + 1);
+
+    const validConsumables = index.filter(i => {
+        const isRightLevel = i.system?.level?.value >= minConsumableLevel && i.system?.level?.value <= maxLevel;
+        const rarity = i.system?.traits?.rarity || "common";
+        const isValidType = ["consumable", "treasure", "ammunition"].includes(i.type);
+        const hasValue = getPriceInGp(i) > 0;
+
+        return isValidType && isRightLevel && ["common", "uncommon"].includes(rarity) && hasValue;
+    });
+
+    const validPermanents = index.filter(i => {
+        const isRightLevel = i.system?.level?.value >= minPermLevel && i.system?.level?.value <= maxLevel;
+        const traits = i.system?.traits?.value || [];
+
+        // Include wands in the permanents pool
+        const isWand = i.type === "consumable" && traits.includes("wand");
+        const isValidType = ["weapon", "armor", "equipment", "shield"].includes(i.type) || isWand;
+        const hasValue = getPriceInGp(i) > 0;
+
+        return isValidType && isRightLevel && hasValue;
+    });
+
+    let itemsToSpawn = [];
+    let remainingBudget = budgetGp;
+    let selectedItemNames = [];
+
     // 3. Select Items
     if (!isStrict) {
         // LOOSE MODE: Grab 1 random permanent item and 1d5 consumables
@@ -197,7 +208,7 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
             selectedItemNames.push(pick.name);
         }
 
-        const consumableCount = Math.floor(Math.random() * 5) + 1; // 1d5
+        const consumableCount = Math.floor(Math.random() * 4) + 1; // 1d4
         for (let i = 0; i < consumableCount; i++) {
             if (validConsumables.length > 0) {
                 const pick = validConsumables[Math.floor(Math.random() * validConsumables.length)];
@@ -206,26 +217,36 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
                 selectedItemNames.push(pick.name);
             }
         }
+
+        // Throw in a small amount of pocket change for loose mode
+        const randomGp = Math.floor(Math.random() * (apl * 5)) + 1;
+        const gpIndex = index.find(i => i.name === "Gold Pieces");
+        if (gpIndex) {
+            const gpDoc = await pack.getDocument(gpIndex._id);
+            const gpObj = gpDoc.toObject();
+            gpObj.system.quantity = randomGp;
+            itemsToSpawn.push(gpObj);
+            selectedItemNames.push(`${randomGp} Gold Pieces`);
+        }
+
     } else {
         // STRICT MODE: Buy items until budget is constrained
-        // Shuffle arrays for randomness
         const shuffledConsumables = validConsumables.sort(() => 0.5 - Math.random());
         const shuffledPermanents = validPermanents.sort(() => 0.5 - Math.random());
 
         // Try to buy 1 permanent item first
         for (const pick of shuffledPermanents) {
             const price = getPriceInGp(pick);
-            // Ensure it doesn't eat more than 70% of the total budget so there's room for other things
             if (price > 0 && price <= (remainingBudget * 0.7)) {
                 const doc = await pack.getDocument(pick._id);
                 itemsToSpawn.push(doc.toObject());
                 selectedItemNames.push(pick.name);
                 remainingBudget -= price;
-                break; // Only 1 permanent
+                break;
             }
         }
 
-        // Try to buy 2-3 consumables with the rest
+        // Try to buy consumables with the rest
         let consumablesBought = 0;
         for (const pick of shuffledConsumables) {
             const price = getPriceInGp(pick);
@@ -235,19 +256,51 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
                 selectedItemNames.push(pick.name);
                 remainingBudget -= price;
                 consumablesBought++;
-                if (consumablesBought >= 3) break;
+                if (consumablesBought >= 4) break;
+            }
+        }
+
+        // Convert the leftover budget exactly into physical Gold and Silver Pieces
+        if (remainingBudget > 0) {
+            let gp = Math.floor(remainingBudget);
+            let sp = Math.floor((remainingBudget - gp) * 10);
+
+            // Mix it up slightly: 50% chance to break 10-30% of the GP into SP
+            if (gp > 0 && Math.random() > 0.5) {
+                const gpToBreak = Math.ceil(gp * (Math.random() * 0.2 + 0.1));
+                gp -= gpToBreak;
+                sp += (gpToBreak * 10);
+            }
+
+            if (gp > 0) {
+                const gpIndex = index.find(i => i.name === "Gold Pieces");
+                if (gpIndex) {
+                    const gpDoc = await pack.getDocument(gpIndex._id);
+                    const gpObj = gpDoc.toObject();
+                    gpObj.system.quantity = gp;
+                    itemsToSpawn.push(gpObj);
+                    selectedItemNames.push(`${gp} Gold Pieces`);
+                }
+            }
+            if (sp > 0) {
+                const spIndex = index.find(i => i.name === "Silver Pieces");
+                if (spIndex) {
+                    const spDoc = await pack.getDocument(spIndex._id);
+                    const spObj = spDoc.toObject();
+                    spObj.system.quantity = sp;
+                    itemsToSpawn.push(spObj);
+                    selectedItemNames.push(`${sp} Silver Pieces`);
+                }
             }
         }
     }
 
     // 4. Create the Loot Actor
-    // Find or create a specific folder to keep the sidebar clean
     let folder = game.folders.find(f => f.type === "Actor" && f.name === "Encounter Loot");
     if (!folder) {
         folder = await Folder.create({ name: "Encounter Loot", type: "Actor" });
     }
 
-    // Generate a unique incrementing name
     const existingLoot = game.actors.filter(a => a.name.startsWith(`Loot_Lvl${apl}_${threat.capitalize()}`));
     const increment = existingLoot.length + 1;
     const actorName = `Loot_Lvl${apl}_${threat.capitalize()}_${increment}`;
@@ -284,20 +337,7 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
     } else {
         chatMessage += `<li><em>No items selected (Budget too low)</em></li>`;
     }
-    chatMessage += `</ul>`;
-
-    if (isStrict) {
-        const roundedBudget = Math.round(remainingBudget * 100) / 100; // Round to 2 decimal places for SP/CP
-        chatMessage += `
-            <hr style="border-top: 1px solid #ddd; margin: 8px 0;">
-            <p style="margin: 0; font-size: 0.9em;">
-                <strong>Remaining Budget:</strong> <span style="color: #8b5a00; font-weight: bold;">${roundedBudget} gp</span> 
-                <br><em>(Distribute this remainder as raw coinage or gems to the party).</em>
-            </p>
-        `;
-    }
-
-    chatMessage += `</div>`;
+    chatMessage += `</ul></div>`;
 
     await ChatMessage.create({
         user: game.user.id,
