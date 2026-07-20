@@ -6,7 +6,7 @@
  */
 
 // --- 1. CONFIGURATION AND IMPORT MACRO LOGIC FILES ---
-
+const MODULE_ID = "pf2e-awesome-macros-for-gms";
 const MACRO_FOLDER_NAME = "PF2e Awesome Macros For GMs";
 const MACRO_FOLDER_COLOR = "#5549fd"; // Blue color for the macro folder
 
@@ -90,6 +90,24 @@ async function createMacroDocument(name, icon, command, folderId) {
     }
 }
 
+async function wipeOldMacros() {
+    // 1. Delete macros using the module flag
+    const oldMacros = game.macros.filter(m => m.flags?.[MODULE_ID]?.isModuleMacro);
+    const oldMacroIds = oldMacros.map(m => m.id);
+
+    if (oldMacroIds.length > 0) {
+        await Macro.deleteDocuments(oldMacroIds);
+        console.log(`PF2e Awesome Macros for GMs | Deleted ${oldMacroIds.length} outdated macros.`);
+    }
+
+    // 2. Delete the folder itself
+    const oldFolder = game.folders.getName(MACRO_FOLDER_NAME);
+    if (oldFolder) {
+        await oldFolder.delete({ deleteSubfolders: true, deleteContents: true });
+        console.log(`PF2e Awesome Macros for GMs | Deleted outdated folder.`);
+    }
+}
+
 
 // --- 3. HOOKS AND INITIALIZATION ---
 Hooks.once('ready', async () => {
@@ -109,83 +127,95 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.openSecretCheckDialog = openSecretCheckDialog;
 
     // Get or Create the Target Folder
-    let targetFolderId = null;
     if (game.user.isGM) {
-        const folder = await getOrCreateFolder(MACRO_FOLDER_NAME, 'Macro');
-        if (folder) {
-            targetFolderId = folder.id;
+        // Get the current version from your module.json
+        const currentVersion = game.modules.get(MODULE_ID)?.version || "1.0.0";
+
+        let folder = game.folders.getName(MACRO_FOLDER_NAME);
+        const storedVersion = folder ? folder.getFlag(MODULE_ID, "moduleVersion") : null;
+
+        // If the versions don't match, run the cleanup and creation logic
+        if (currentVersion !== storedVersion) {
+            // Clean up the old mess
+            await wipeOldMacros();
+
+            folder = await getOrCreateFolder(MACRO_FOLDER_NAME, 'Macro');
+            let targetFolderId = folder ? folder.id : null;
+
+            // Programmatically create the macro buttons 
+            await createMacroDocument(
+                RANDOM_ENCOUNTER_MACRO_NAME,
+                RANDOM_ENCOUNTER_MACRO_ICON,
+                `game.pf2eAwesomeMacros.generateEncounter();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                JOURNAL_EXPORT_MACRO_NAME,
+                JOURNAL_EXPORT_MACRO_ICON,
+                `game.pf2eAwesomeMacros.openJournalExportDialog();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                FULL_RESTORE_MACRO_NAME,
+                FULL_RESTORE_MACRO_ICON,
+                `game.pf2eAwesomeMacros.openFullRestoreDialog();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                QUICK_TOKEN_RESIZER_MACRO_NAME,
+                QUICK_TOKEN_RESIZER_MACRO_ICON,
+                `game.pf2eAwesomeMacros.resizeToken();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                COMBAT_CLEANUP_MACRO_NAME,
+                COMBAT_CLEANUP_MACRO_ICON,
+                `game.pf2eAwesomeMacros.cleanupCombat();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                INITIATIVE_MODIFIER_MACRO_NAME,
+                INITIATIVE_MODIFIER_MACRO_ICON,
+                `game.pf2eAwesomeMacros.applyInitiativeModifier();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                EXPERIENCE_AWARD_MACRO_NAME,
+                EXPERIENCE_AWARD_MACRO_ICON,
+                `game.pf2eAwesomeMacros.awardXP();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                CONDITION_MACRO_NAME,
+                CONDITION_MACRO_ICON,
+                `game.pf2eAwesomeMacros.addCondition();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                EXPLORATION_ACTIVITY_MACRO_NAME,
+                EXPLORATION_ACTIVITY_MACRO_ICON,
+                `game.pf2eAwesomeMacros.addExplorationActivity();`,
+                targetFolderId
+            );
+
+            await createMacroDocument(
+                QUICK_SECRET_MACRO_NAME,
+                QUICK_SECRET_MACRO_ICON,
+                `game.pf2eAwesomeMacros.openSecretCheckDialog();`,
+                targetFolderId
+            );
+
+            await folder.setFlag(MODULE_ID, "moduleVersion", currentVersion);
+            ui.notifications.info(`[PF2e Awesome Macros] Setup complete!`);
         }
-
-        // Programmatically create the macro buttons 
-        createMacroDocument(
-            RANDOM_ENCOUNTER_MACRO_NAME,
-            RANDOM_ENCOUNTER_MACRO_ICON,
-            `game.pf2eAwesomeMacros.generateEncounter();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            JOURNAL_EXPORT_MACRO_NAME,
-            JOURNAL_EXPORT_MACRO_ICON,
-            `game.pf2eAwesomeMacros.openJournalExportDialog();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            FULL_RESTORE_MACRO_NAME,
-            FULL_RESTORE_MACRO_ICON,
-            `game.pf2eAwesomeMacros.openFullRestoreDialog();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            QUICK_TOKEN_RESIZER_MACRO_NAME,
-            QUICK_TOKEN_RESIZER_MACRO_ICON,
-            `game.pf2eAwesomeMacros.resizeToken();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            COMBAT_CLEANUP_MACRO_NAME,
-            COMBAT_CLEANUP_MACRO_ICON,
-            `game.pf2eAwesomeMacros.cleanupCombat();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            INITIATIVE_MODIFIER_MACRO_NAME,
-            INITIATIVE_MODIFIER_MACRO_ICON,
-            `game.pf2eAwesomeMacros.applyInitiativeModifier();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            EXPERIENCE_AWARD_MACRO_NAME,
-            EXPERIENCE_AWARD_MACRO_ICON,
-            `game.pf2eAwesomeMacros.awardXP();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            CONDITION_MACRO_NAME,
-            CONDITION_MACRO_ICON,
-            `game.pf2eAwesomeMacros.addCondition();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            EXPLORATION_ACTIVITY_MACRO_NAME,
-            EXPLORATION_ACTIVITY_MACRO_ICON,
-            `game.pf2eAwesomeMacros.addExplorationActivity();`,
-            targetFolderId
-        );
-
-        createMacroDocument(
-            QUICK_SECRET_MACRO_NAME,
-            QUICK_SECRET_MACRO_ICON,
-            `game.pf2eAwesomeMacros.openSecretCheckDialog();`,
-            targetFolderId
-        );
     }
     console.log('PF2e Awesome Macros for GMs | All module logic and macros initialized.');
 });
