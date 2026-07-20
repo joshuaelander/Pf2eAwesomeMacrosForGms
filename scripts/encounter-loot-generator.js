@@ -155,14 +155,22 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
     }
 
     // 2. Fetch Compendium Index (Optimized search)
-    const index = await pack.getIndex({ fields: ["system.level.value", "system.price.value", "type"] });
+    const index = await pack.getIndex({ fields: ["system.level.value", "system.price.value", "type", "system.traits.rarity"] });
 
-    // Filter index for potential items (Level appropriate: APL-1 to APL+1)
-    const minLevel = Math.max(0, apl - 1);
+    // Filter index for potential items
+    const minConsumableLevel = Math.max(0, apl - 3);
+    const minPermLevel = Math.max(0, apl - 1);
     const maxLevel = Math.min(20, apl + 1);
 
-    const validConsumables = index.filter(i => i.type === "consumable" && i.system?.level?.value >= minLevel && i.system?.level?.value <= maxLevel);
-    const validPermanents = index.filter(i => ["weapon", "armor", "equipment"].includes(i.type) && i.system?.level?.value >= minLevel && i.system?.level?.value <= maxLevel);
+    const validConsumables = index.filter(i => {
+        const isRightLevel = i.system?.level?.value >= minConsumableLevel && i.system?.level?.value <= maxLevel;
+        const rarity = i.system?.traits?.rarity || "common";
+
+        const isValidType = ["consumable", "treasure", "ammunition"].includes(i.type);
+
+        return isValidType && isRightLevel && ["common", "uncommon"].includes(rarity);
+    });
+    const validPermanents = index.filter(i => ["weapon", "armor", "equipment", "shield"].includes(i.type) && i.system?.level?.value >= minPermLevel && i.system?.level?.value <= maxLevel);
 
     let itemsToSpawn = [];
     let remainingBudget = budgetGp;
@@ -181,7 +189,7 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
 
     // 3. Select Items
     if (!isStrict) {
-        // LOOSE MODE: Grab 1 random permanent item and 1d4 consumables
+        // LOOSE MODE: Grab 1 random permanent item and 1d5 consumables
         if (validPermanents.length > 0) {
             const pick = validPermanents[Math.floor(Math.random() * validPermanents.length)];
             const doc = await pack.getDocument(pick._id);
@@ -189,7 +197,7 @@ async function processLootGeneration(apl, partySize, threat, isStrict) {
             selectedItemNames.push(pick.name);
         }
 
-        const consumableCount = Math.floor(Math.random() * 4) + 1; // 1d4
+        const consumableCount = Math.floor(Math.random() * 5) + 1; // 1d5
         for (let i = 0; i < consumableCount; i++) {
             if (validConsumables.length > 0) {
                 const pick = validConsumables[Math.floor(Math.random() * validConsumables.length)];
