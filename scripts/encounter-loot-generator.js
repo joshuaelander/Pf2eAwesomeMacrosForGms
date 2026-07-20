@@ -125,7 +125,6 @@ export async function generateEncounterLoot() {
                     const threat = html.find('input[name="lootThreat"]:checked').val();
                     const isStrict = html.find('#strictRules').is(':checked');
 
-                    ui.notifications.info("Searching compendium for loot...");
                     await processLootGeneration(apl, size, threat, isStrict);
                 }
             },
