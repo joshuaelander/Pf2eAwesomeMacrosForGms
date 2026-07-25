@@ -1,4 +1,4 @@
-# Pf2eAwesomeMacrosForGms
+# Pf2e Awesome Macros For Gms
 Overview: A collection of very useful Foundry VTT macros for GMs to use in PF2e. I often found myself needing things mid-session so I decided to make them myself. Here are 10 ones I found useful.
 
 Contents: \
