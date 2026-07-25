@@ -1,4 +1,4 @@
-# Pf2eAwesomeMacrosForGms
+# Pf2e Awesome Macros For Gms
 
 Changes: \
 7/20/2026 - Version 2.2.2: Added a new macro for generating encounter loot based on the encounter level and party size. \
