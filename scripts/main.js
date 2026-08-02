@@ -21,6 +21,7 @@ import { awardXP, EXPERIENCE_AWARD_MACRO_NAME, EXPERIENCE_AWARD_MACRO_ICON } fro
 import { addCondition, CONDITION_MACRO_NAME, CONDITION_MACRO_ICON } from './easy-add-conditions.js';
 import { openSecretCheckDialog, QUICK_SECRET_MACRO_NAME, QUICK_SECRET_MACRO_ICON } from './quick-secret-check.js';
 import { generateEncounterLoot, ENCOUNTER_LOOT_MACRO_NAME, ENCOUNTER_LOOT_MACRO_ICON } from './encounter-loot-generator.js';
+import { updateTokenNameDisplay, TOKEN_NAME_VISIBILITY_MACRO_NAME, TOKEN_NAME_VISIBILITY_MACRO_ICON } from './reveal-to-players.js';
 
 // --- 2. THE DESIRED MACRO STATE ---
 // Add any new macros to this array. The Smart Sync will handle the rest!
@@ -34,7 +35,8 @@ const DESIRED_MACROS = [
     { name: EXPERIENCE_AWARD_MACRO_NAME, icon: EXPERIENCE_AWARD_MACRO_ICON, command: `game.pf2eAwesomeMacros.awardXP();` },
     { name: CONDITION_MACRO_NAME, icon: CONDITION_MACRO_ICON, command: `game.pf2eAwesomeMacros.addCondition();` },
     { name: QUICK_SECRET_MACRO_NAME, icon: QUICK_SECRET_MACRO_ICON, command: `game.pf2eAwesomeMacros.openSecretCheckDialog();` },
-    { name: ENCOUNTER_LOOT_MACRO_NAME, icon: ENCOUNTER_LOOT_MACRO_ICON, command: `game.pf2eAwesomeMacros.generateEncounterLoot();` }
+    { name: ENCOUNTER_LOOT_MACRO_NAME, icon: ENCOUNTER_LOOT_MACRO_ICON, command: `game.pf2eAwesomeMacros.generateEncounterLoot();` },
+    { name: TOKEN_NAME_VISIBILITY_MACRO_NAME, icon: TOKEN_NAME_VISIBILITY_MACRO_ICON, command: `game.pf2eAwesomeMacros.updateTokenNameDisplay();` }
 ];
 
 
@@ -128,6 +130,7 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.addCondition = addCondition;
     game.pf2eAwesomeMacros.openSecretCheckDialog = openSecretCheckDialog;
     game.pf2eAwesomeMacros.generateEncounterLoot = generateEncounterLoot;
+    game.pf2eAwesomeMacros.updateTokenNameDisplay = updateTokenNameDisplay;
 
     if (game.user.isGM) {
         const currentVersion = game.modules.get(MODULE_ID)?.version || "1.0.0";
