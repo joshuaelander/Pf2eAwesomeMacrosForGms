@@ -25,10 +25,28 @@ export async function updateTokenNameDisplay() {
         return;
     }
 
+    // Inject CSS to format the buttons into a 2x2 grid with a full-width cancel button
+    const style = `
+    <style>
+        .token-name-dialog .dialog-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        .token-name-dialog .dialog-buttons button {
+            margin: 0; 
+            padding: 5px 0;
+        }
+        .token-name-dialog .dialog-buttons button.cancel {
+            grid-column: span 2;
+        }
+    </style>
+    `;
+
     // Dynamically generate the warning text for the dialog
-    const content = isMassUpdate
+    const content = style + (isMassUpdate
         ? `<p>⚠️ <b>No tokens selected.</b></p><p>Do you want to mass update the display names of <b>ALL ${tokensToUpdate.length} non-party tokens</b> on this scene?</p><hr><p>Select the new display mode below:</p>`
-        : `<p>Update display names for <b>${tokensToUpdate.length} selected token(s)</b>?</p><hr><p>Select the new display mode below:</p>`;
+        : `<p>Update display names for <b>${tokensToUpdate.length} selected token(s)</b>?</p><hr><p>Select the new display mode below:</p>`);
 
     // Function to handle the actual database update
     const applyUpdate = async (mode) => {
@@ -42,7 +60,7 @@ export async function updateTokenNameDisplay() {
 
     // Render the UI Dialog
     new Dialog({
-        title: "Token Name Display Mode",
+        title: "Reveal to Players: Token Name Visibility",
         content: content,
         buttons: {
             none: {
@@ -67,5 +85,8 @@ export async function updateTokenNameDisplay() {
             }
         },
         default: "cancel"
-    }, { width: 600 }).render(true);
+    }, {
+        width: 420, // Reduced width since the buttons are no longer squeezed in one row
+        classes: ["dialog", "token-name-dialog"] // Adds our custom class for CSS targeting
+    }).render(true);
 }
