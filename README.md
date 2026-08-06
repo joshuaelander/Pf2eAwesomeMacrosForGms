@@ -12,6 +12,8 @@ Contents: \
 8.) Quick Secret/Recall Knowledge Check - Do a full party recall knowledge or other secret checks to help speed up when multiple people want to check or you need secret rolls \
 9.) Quick Token Resizer - Quickly resize token to big or small to help with space in dungeons \
 10.) Random Encounter Generator - Generate a random encounter from the bestiary or monster core of PF2e
+11.) Reveal Token Names to Players - Quickly reveal or hide token names to players to help with recall knowledge \
+12.) Quick Whisper to Player - Quickly whisper a message to a player without having to type it out manually \
 
 If you'd like you can help support me over on Patreon to see this and many other fun tools, maps, etc related to PF2e.
 Linked here: https://patreon.com/AeneasPF2e
