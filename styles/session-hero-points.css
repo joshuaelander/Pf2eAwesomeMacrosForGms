@@ -1,0 +1,331 @@
+/* PF2e Awesome Macros for GMs — Session Hero Points (Character Sheet & Manager Dialog) */
+
+/* --- Character Sheet Hero Point Indicators --- */
+.shpm-session-pip {
+    color: #168aad !important;
+    filter: drop-shadow(0 0 3px rgba(22, 138, 173, 0.75));
+    position: relative;
+}
+
+.shpm-session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    padding: 0 5px;
+    height: 16px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    background: rgba(22, 138, 173, 0.16);
+    border: 1px solid #168aad;
+    color: #0e637d;
+    vertical-align: middle;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* --- Session Hero Points Manager Dialog (Classic Cream Parchment) --- */
+.shpm-window {
+    border: 1px solid #000000 !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.55) !important;
+}
+
+.shpm-window .window-header {
+    background: #1c1b18 !important;
+    color: #f0f0e0 !important;
+    border-bottom: 1px solid #000000 !important;
+}
+
+.shpm-window .window-header .window-title,
+.shpm-window .window-header .header-control,
+.shpm-window .window-header i {
+    color: #f0f0e0 !important;
+}
+
+.shpm-window .window-content {
+    background: linear-gradient(180deg, #efece3 0%, #e5e1d5 100%) !important;
+    color: #191813 !important;
+}
+
+.shpm-window .dialog-form,
+.shpm-window .standard-form {
+    color: #191813 !important;
+}
+
+.shpm-window .form-footer {
+    border-top: 1px solid #b5b3a4;
+    padding-top: 8px;
+}
+
+.shpm-window .form-footer button {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+    border: 1px solid #7a7971 !important;
+    font-weight: 600;
+}
+
+.shpm-window .form-footer button:hover {
+    background: rgba(0, 0, 0, 0.14) !important;
+    border-color: #191813 !important;
+}
+
+.shpm-dialog {
+    font-family: "Signika", sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    color: #191813;
+}
+
+.shpm-dialog * {
+    box-sizing: border-box;
+}
+
+.shpm-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 7px 10px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
+}
+
+.shpm-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #4b4a44;
+}
+
+.shpm-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.shpm-dot-sample {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid #191813;
+}
+
+.shpm-dot-sample.perm {
+    background: #191813;
+}
+
+.shpm-dot-sample.sess {
+    background: #168aad;
+    border-color: #0e637d;
+}
+
+.shpm-bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.shpm-dialog button.shpm-action-btn {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: 26px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+}
+
+.shpm-dialog button.shpm-action-btn.primary {
+    border-color: #0e637d !important;
+    background: rgba(22, 138, 173, 0.16) !important;
+    color: #0b4d61 !important;
+}
+
+.shpm-dialog button.shpm-action-btn:hover {
+    background: rgba(0, 0, 0, 0.14) !important;
+    border-color: #191813 !important;
+}
+
+.shpm-dialog button.shpm-action-btn.primary:hover {
+    background: rgba(22, 138, 173, 0.28) !important;
+}
+
+.shpm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    max-height: 360px;
+    overflow-y: auto;
+    overflow-x: hidden !important;
+}
+
+.shpm-row {
+    display: grid;
+    grid-template-columns: 32px minmax(110px, 1fr) auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #b5b3a4;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.shpm-dialog img.shpm-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #2b2a27;
+    border: 1px solid #7a7971;
+    display: block;
+}
+
+.shpm-info {
+    min-width: 0;
+}
+
+.shpm-name {
+    font-weight: 700;
+    font-size: 0.93rem;
+    color: #191813;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shpm-pips-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    font-size: 0.76rem;
+    color: #4b4a44;
+}
+
+.shpm-pip-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.shpm-pip-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid #7a7971;
+    background: transparent;
+}
+
+.shpm-pip-dot.perm {
+    background: #191813;
+    border-color: #191813;
+}
+
+.shpm-pip-dot.sess {
+    background: #168aad;
+    border-color: #0e637d;
+}
+
+.shpm-control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.shpm-control-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #4b4a44;
+}
+
+.shpm-control-label.sess {
+    color: #0e637d;
+}
+
+.shpm-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #7a7971;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.shpm-stepper.sess {
+    border-color: #168aad;
+}
+
+.shpm-dialog button.shpm-step-btn {
+    width: 22px !important;
+    flex: 0 0 22px !important;
+    min-height: 0 !important;
+    height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: none !important;
+    border-radius: 0 !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #191813 !important;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.shpm-dialog button.shpm-step-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.16) !important;
+}
+
+.shpm-dialog button.shpm-step-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.shpm-count-val {
+    width: 24px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    color: #191813;
+}
+
+.shpm-count-val.sess {
+    color: #0e637d;
+}
+
+.shpm-note {
+    font-size: 0.78rem;
+    color: #4b4a44;
+    text-align: center;
+}
