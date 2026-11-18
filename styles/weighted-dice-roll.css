@@ -1,5 +1,57 @@
-/* PF2e Awesome Macros for GMs — Weighted Dice Roll Styles */
+/* PF2e Awesome Macros for GMs — Weighted Dice Roll (Classic Foundry Cream Parchment Aesthetic) */
 
+/* DialogV2 Shell (Matches AppV1 Dialog Cream Parchment & Dark Header) */
+.wdr-window {
+    border: 1px solid #000000 !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.55) !important;
+}
+
+.wdr-window .window-header {
+    background: #1c1b18 !important;
+    color: #f0f0e0 !important;
+    border-bottom: 1px solid #000000 !important;
+}
+
+.wdr-window .window-header .window-title,
+.wdr-window .window-header .header-control,
+.wdr-window .window-header i {
+    color: #f0f0e0 !important;
+}
+
+.wdr-window .window-content {
+    background: linear-gradient(180deg, #efece3 0%, #e5e1d5 100%) !important;
+    color: #191813 !important;
+}
+
+.wdr-window .dialog-form,
+.wdr-window .standard-form {
+    color: #191813 !important;
+}
+
+.wdr-window .form-footer {
+    border-top: 1px solid #b5b3a4;
+    padding-top: 8px;
+}
+
+.wdr-window .form-footer button {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+    border: 1px solid #7a7971 !important;
+    font-weight: 600;
+}
+
+.wdr-window .form-footer button[data-action="roll"] {
+    background: rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #191813 !important;
+    font-weight: 700;
+}
+
+.wdr-window .form-footer button:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+}
+
+/* Main Dialog Container */
 .wdr-dialog {
     font-family: "Signika", sans-serif;
     display: flex;
@@ -8,34 +60,39 @@
     width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
-    color: #f0f3fa;
+    color: #191813;
 }
 
 .wdr-dialog * {
     box-sizing: border-box;
 }
 
+.wdr-dialog input[type="checkbox"] {
+    accent-color: #4b4a44;
+}
+
+/* Top Toolbar */
 .wdr-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     flex-wrap: wrap;
-    padding: 7px 10px;
-    border-radius: 6px;
-    background: #1a1e2b;
-    border: 1px solid #3b4259;
+    padding: 6px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
 }
 
 .wdr-summary {
     font-weight: 700;
     font-size: 0.95rem;
-    color: #f0f3fa;
+    color: #191813;
 }
 
 .wdr-source-note {
     font-size: 0.78rem;
-    color: #9aa2bc;
+    color: #4b4a44;
 }
 
 .wdr-toolbar-actions {
@@ -56,19 +113,21 @@
     align-items: center;
     justify-content: center;
     font-size: 0.78rem;
+    font-weight: 600;
     line-height: 1;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #3b4259 !important;
-    background: #222738 !important;
-    color: #f0f3fa !important;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #191813 !important;
 }
 
 .wdr-dialog button.wdr-mini-btn:hover {
-    background: #2e354c !important;
-    border-color: #d4af37 !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    border-color: #191813 !important;
 }
 
+/* Candidate List & Rows */
 .wdr-list {
     display: flex;
     flex-direction: column;
@@ -86,18 +145,24 @@
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid #3b4259;
-    background: #1a1e2b;
-    transition: opacity 0.15s ease, border-color 0.15s ease;
+    border-radius: 4px;
+    border: 1px solid #b5b3a4;
+    background: rgba(255, 255, 255, 0.45);
+    transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.wdr-row:hover {
+    border-color: #7a7971;
+    background: rgba(255, 255, 255, 0.72);
 }
 
 .wdr-row.wdr-row-disabled {
     opacity: 0.5;
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .wdr-row.wdr-row-down .wdr-status {
-    color: #f07b6e;
+    color: #9e2a2b;
     font-weight: 700;
 }
 
@@ -124,8 +189,8 @@
     max-height: 32px;
     border-radius: 4px;
     object-fit: cover;
-    background: #11141c;
-    border: 1px solid #3b4259;
+    background: #2b2a27;
+    border: 1px solid #7a7971;
     display: block;
 }
 
@@ -135,8 +200,8 @@
 
 .wdr-name {
     font-weight: 700;
-    font-size: 0.92rem;
-    color: #f0f3fa;
+    font-size: 0.93rem;
+    color: #191813;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -144,12 +209,13 @@
 
 .wdr-status {
     font-size: 0.74rem;
-    color: #9aa2bc;
+    color: #4b4a44;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+/* Quick Weight Pills */
 .wdr-pills {
     display: flex;
     align-items: center;
@@ -171,29 +237,30 @@
     line-height: 1;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #3b4259 !important;
-    background: #222738 !important;
-    color: #f0f3fa !important;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #191813 !important;
 }
 
 .wdr-dialog button.wdr-pill:hover {
-    border-color: #d4af37 !important;
-    background: #2b3248 !important;
+    border-color: #191813 !important;
+    background: rgba(0, 0, 0, 0.12) !important;
 }
 
 .wdr-dialog button.wdr-pill.active {
-    background: #8f1d24 !important;
+    background: #3b3a35 !important;
     color: #ffffff !important;
-    border-color: #d4af37 !important;
+    border-color: #191813 !important;
 }
 
+/* Numeric Stepper */
 .wdr-stepper {
     display: inline-flex;
     align-items: center;
-    border: 1px solid #3b4259;
+    border: 1px solid #7a7971;
     border-radius: 4px;
     overflow: hidden;
-    background: #202433;
+    background: #ffffff;
 }
 
 .wdr-dialog button.wdr-step-btn {
@@ -208,15 +275,15 @@
     justify-content: center;
     border: none !important;
     border-radius: 0 !important;
-    background: #2a3044 !important;
-    color: #f0f3fa !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #191813 !important;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
 }
 
 .wdr-dialog button.wdr-step-btn:hover {
-    background: #3a425c !important;
+    background: rgba(0, 0, 0, 0.16) !important;
 }
 
 .wdr-dialog input.wdr-weight-input {
@@ -229,8 +296,8 @@
     text-align: center !important;
     border: none !important;
     border-radius: 0 !important;
-    background: #202433 !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    color: #191813 !important;
     font-weight: 700;
     font-size: 0.86rem;
     font-variant-numeric: tabular-nums;
@@ -239,7 +306,7 @@
 
 .wdr-dialog input.wdr-weight-input:focus {
     outline: none !important;
-    box-shadow: inset 0 0 0 1px #d4af37 !important;
+    box-shadow: inset 0 0 0 1px #191813 !important;
 }
 
 .wdr-dialog input.wdr-weight-input::-webkit-inner-spin-button,
@@ -248,6 +315,7 @@
     margin: 0;
 }
 
+/* Odds Column */
 .wdr-odds {
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -258,22 +326,23 @@
     display: block;
     font-weight: 700;
     font-size: 0.88rem;
-    color: #f0b543;
+    color: #191813;
 }
 
 .wdr-range {
     display: block;
     font-size: 0.72rem;
-    color: #9aa2bc;
+    color: #4b4a44;
 }
 
+/* Inline Result Banner */
 .wdr-inline-result {
     display: none;
-    padding: 7px 10px;
-    border-radius: 6px;
-    border: 1px solid #d4af37;
-    background: rgba(143, 29, 36, 0.28);
-    color: #f0f3fa;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #7a7971;
+    background: rgba(0, 0, 0, 0.06);
+    color: #191813;
     font-size: 0.9rem;
     align-items: center;
     justify-content: space-between;
@@ -284,6 +353,7 @@
     display: flex;
 }
 
+/* Footer Options Row */
 .wdr-footer-options {
     display: flex;
     align-items: center;
@@ -291,7 +361,7 @@
     gap: 10px;
     flex-wrap: wrap;
     padding-top: 6px;
-    border-top: 1px solid #3b4259;
+    border-top: 1px solid #b5b3a4;
     font-size: 0.85rem;
 }
 
@@ -308,7 +378,7 @@
     gap: 5px;
     cursor: pointer;
     margin: 0;
-    color: #f0f3fa;
+    color: #191813;
 }
 
 .wdr-dialog button.wdr-keep-open-btn {
@@ -324,15 +394,16 @@
     gap: 6px;
     font-size: 0.85rem;
     font-weight: 700;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #d4af37 !important;
-    background: #8f1d24 !important;
-    color: #ffffff !important;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
 }
 
 .wdr-dialog button.wdr-keep-open-btn:hover:not(:disabled) {
-    background: #a8242c !important;
+    background: rgba(0, 0, 0, 0.14) !important;
+    border-color: #191813 !important;
 }
 
 .wdr-dialog button.wdr-keep-open-btn:disabled {
@@ -340,7 +411,7 @@
     cursor: not-allowed;
 }
 
-/* Chat card buttons */
+/* Chat Card Buttons */
 .wdr-chat-actions button.wdr-chat-btn {
     width: auto !important;
     flex: 1 1 0 !important;
@@ -355,4 +426,12 @@
     font-size: 0.82rem;
     border-radius: 4px;
     cursor: pointer;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #191813 !important;
+}
+
+.wdr-chat-actions button.wdr-chat-btn:hover {
+    background: rgba(0, 0, 0, 0.12) !important;
+    border-color: #191813 !important;
 }

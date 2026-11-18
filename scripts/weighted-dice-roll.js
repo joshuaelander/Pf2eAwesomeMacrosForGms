@@ -375,7 +375,7 @@ async function executeWeightedRoll(candidates, options) {
         .map((entry) => {
             const isWinner = entry.key === winner.key;
             const rowStyle = isWinner
-                ? "background: rgba(120, 46, 34, 0.14); border-left: 3px solid #782e22; font-weight: bold;"
+                ? "background: rgba(0, 0, 0, 0.08); border-left: 3px solid #191813; font-weight: bold;"
                 : "border-left: 3px solid transparent; opacity: 0.85;";
             return `
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 3px 6px; margin-bottom: 2px; border-radius: 3px; font-size: 0.88em; ${rowStyle}">
@@ -394,22 +394,22 @@ async function executeWeightedRoll(candidates, options) {
     const canTargetOnScene = Boolean(winner.tokenId && canvas?.tokens?.get(winner.tokenId));
 
     const content = `
-        <div class="wdr-chat-card" style="font-family: 'Signika', sans-serif; border: 1px solid rgba(120, 46, 34, 0.45); border-radius: 6px; padding: 8px; background: rgba(0, 0, 0, 0.04);">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(120, 46, 34, 0.35); padding-bottom: 4px; margin-bottom: 8px;">
-                <strong style="color: #782e22; font-size: 1.05em;">
+        <div class="wdr-chat-card" style="font-family: 'Signika', sans-serif; border: 1px solid #7a7971; border-radius: 6px; padding: 8px; background: rgba(0, 0, 0, 0.04); color: #191813;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #b5b3a4; padding-bottom: 4px; margin-bottom: 8px;">
+                <strong style="color: #191813; font-size: 1.05em;">
                     <i class="fas fa-crosshairs"></i> Weighted Target Roll
                 </strong>
-                <span style="font-size: 0.85em; font-weight: bold; padding: 1px 6px; border-radius: 10px; background: rgba(120, 46, 34, 0.14); color: #782e22;">
+                <span style="font-size: 0.85em; font-weight: bold; padding: 1px 7px; border-radius: 10px; background: rgba(0, 0, 0, 0.08); border: 1px solid #7a7971; color: #191813;">
                     1d${dieSides} = ${rolledValue}
                 </span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; margin-bottom: 8px; border-radius: 5px; background: rgba(120, 46, 34, 0.12); border: 1px solid rgba(120, 46, 34, 0.35);">
-                <img src="${escapeHtml(winner.img)}" width="36" height="36" style="border-radius: 4px; border: 1px solid #782e22; object-fit: cover; flex-shrink: 0;" />
+            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; margin-bottom: 8px; border-radius: 5px; background: rgba(255, 255, 255, 0.45); border: 1px solid #7a7971;">
+                <img src="${escapeHtml(winner.img)}" width="36" height="36" style="border-radius: 4px; border: 1px solid #7a7971; object-fit: cover; flex-shrink: 0;" />
                 <div style="min-width: 0; flex: 1;">
-                    <div style="font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.75;">Selected Target</div>
-                    <div style="font-size: 1.15em; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(winner.name)}</div>
-                    <div style="font-size: 0.82em; opacity: 0.8;">
+                    <div style="font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.04em; color: #4b4a44;">Selected Target</div>
+                    <div style="font-size: 1.15em; font-weight: bold; color: #191813; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(winner.name)}</div>
+                    <div style="font-size: 0.82em; color: #4b4a44;">
                         Chance: ${formatPercent(winner.chancePct)} (Weight ${winner.weight}/${Math.round(totalWeight * 100) / 100} · Range ${winner.rangeLabel})
                     </div>
                 </div>
