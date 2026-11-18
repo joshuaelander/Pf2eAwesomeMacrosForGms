@@ -1,0 +1,358 @@
+/* PF2e Awesome Macros for GMs — Weighted Dice Roll Styles */
+
+.wdr-dialog {
+    font-family: "Signika", sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    color: #f0f3fa;
+}
+
+.wdr-dialog * {
+    box-sizing: border-box;
+}
+
+.wdr-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #1a1e2b;
+    border: 1px solid #3b4259;
+}
+
+.wdr-summary {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #f0f3fa;
+}
+
+.wdr-source-note {
+    font-size: 0.78rem;
+    color: #9aa2bc;
+}
+
+.wdr-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.wdr-dialog button.wdr-mini-btn {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: 24px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #3b4259 !important;
+    background: #222738 !important;
+    color: #f0f3fa !important;
+}
+
+.wdr-dialog button.wdr-mini-btn:hover {
+    background: #2e354c !important;
+    border-color: #d4af37 !important;
+}
+
+.wdr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    max-height: 360px;
+    overflow-y: auto;
+    overflow-x: hidden !important;
+    padding-right: 2px;
+}
+
+.wdr-row {
+    display: grid;
+    grid-template-columns: 20px 32px minmax(110px, 1fr) auto auto 64px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #3b4259;
+    background: #1a1e2b;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.wdr-row.wdr-row-disabled {
+    opacity: 0.5;
+}
+
+.wdr-row.wdr-row-down .wdr-status {
+    color: #f07b6e;
+    font-weight: 700;
+}
+
+.wdr-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: 0;
+}
+
+.wdr-dialog input.wdr-enable-cb {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+.wdr-dialog img.wdr-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #11141c;
+    border: 1px solid #3b4259;
+    display: block;
+}
+
+.wdr-info {
+    min-width: 0;
+}
+
+.wdr-name {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #f0f3fa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wdr-status {
+    font-size: 0.74rem;
+    color: #9aa2bc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wdr-pills {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.wdr-dialog button.wdr-pill {
+    width: 30px !important;
+    flex: 0 0 30px !important;
+    min-height: 0 !important;
+    height: 26px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #3b4259 !important;
+    background: #222738 !important;
+    color: #f0f3fa !important;
+}
+
+.wdr-dialog button.wdr-pill:hover {
+    border-color: #d4af37 !important;
+    background: #2b3248 !important;
+}
+
+.wdr-dialog button.wdr-pill.active {
+    background: #8f1d24 !important;
+    color: #ffffff !important;
+    border-color: #d4af37 !important;
+}
+
+.wdr-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #3b4259;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #202433;
+}
+
+.wdr-dialog button.wdr-step-btn {
+    width: 22px !important;
+    flex: 0 0 22px !important;
+    min-height: 0 !important;
+    height: 26px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #2a3044 !important;
+    color: #f0f3fa !important;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.wdr-dialog button.wdr-step-btn:hover {
+    background: #3a425c !important;
+}
+
+.wdr-dialog input.wdr-weight-input {
+    width: 38px !important;
+    flex: 0 0 38px !important;
+    height: 26px !important;
+    min-height: 0 !important;
+    padding: 0 2px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #202433 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.86rem;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+}
+
+.wdr-dialog input.wdr-weight-input:focus {
+    outline: none !important;
+    box-shadow: inset 0 0 0 1px #d4af37 !important;
+}
+
+.wdr-dialog input.wdr-weight-input::-webkit-inner-spin-button,
+.wdr-dialog input.wdr-weight-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.wdr-odds {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.wdr-pct {
+    display: block;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #f0b543;
+}
+
+.wdr-range {
+    display: block;
+    font-size: 0.72rem;
+    color: #9aa2bc;
+}
+
+.wdr-inline-result {
+    display: none;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid #d4af37;
+    background: rgba(143, 29, 36, 0.28);
+    color: #f0f3fa;
+    font-size: 0.9rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wdr-inline-result.visible {
+    display: flex;
+}
+
+.wdr-footer-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 6px;
+    border-top: 1px solid #3b4259;
+    font-size: 0.85rem;
+}
+
+.wdr-opt-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.wdr-opt-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    margin: 0;
+    color: #f0f3fa;
+}
+
+.wdr-dialog button.wdr-keep-open-btn {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: 28px !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid #d4af37 !important;
+    background: #8f1d24 !important;
+    color: #ffffff !important;
+}
+
+.wdr-dialog button.wdr-keep-open-btn:hover:not(:disabled) {
+    background: #a8242c !important;
+}
+
+.wdr-dialog button.wdr-keep-open-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Chat card buttons */
+.wdr-chat-actions button.wdr-chat-btn {
+    width: auto !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 26px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 0.82rem;
+    border-radius: 4px;
+    cursor: pointer;
+}

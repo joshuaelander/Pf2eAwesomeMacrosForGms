@@ -14,6 +14,7 @@ Contents: \
 10.) Random Encounter Generator - Generate a random encounter from the bestiary or monster core of PF2e
 11.) Reveal Token Names to Players - Quickly reveal or hide token names to players to help with recall knowledge \
 12.) Quick Whisper to Player - Quickly whisper a message to a player without having to type it out manually \
+13.) Weighted Dice Roll - Roll a weighted random PC target for enemy attacks in combat \
 
 If you'd like you can help support me over on Patreon to see this and many other fun tools, maps, etc related to PF2e.
 Linked here: https://patreon.com/AeneasPF2e

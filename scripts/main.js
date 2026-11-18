@@ -23,6 +23,7 @@ import { openSecretCheckDialog, QUICK_SECRET_MACRO_NAME, QUICK_SECRET_MACRO_ICON
 import { generateEncounterLoot, ENCOUNTER_LOOT_MACRO_NAME, ENCOUNTER_LOOT_MACRO_ICON } from './encounter-loot-generator.js';
 import { updateTokenNameDisplay, TOKEN_NAME_VISIBILITY_MACRO_NAME, TOKEN_NAME_VISIBILITY_MACRO_ICON } from './reveal-to-players.js';
 import { quickWhisperPlayer, QUICK_WHISPER_MACRO_NAME, QUICK_WHISPER_MACRO_ICON } from './quick-whisper.js';
+import { openWeightedDiceRollDialog, registerWeightedDiceRollHooks, WEIGHTED_DICE_ROLL_MACRO_NAME, WEIGHTED_DICE_ROLL_MACRO_ICON } from './weighted-dice-roll.js';
 
 // --- 2. THE DESIRED MACRO STATE ---
 // Add any new macros to this array. The Smart Sync will handle the rest!
@@ -38,7 +39,8 @@ const DESIRED_MACROS = [
     { name: QUICK_SECRET_MACRO_NAME, icon: QUICK_SECRET_MACRO_ICON, command: `game.pf2eAwesomeMacros.openSecretCheckDialog();` },
     { name: ENCOUNTER_LOOT_MACRO_NAME, icon: ENCOUNTER_LOOT_MACRO_ICON, command: `game.pf2eAwesomeMacros.generateEncounterLoot();` },
     { name: TOKEN_NAME_VISIBILITY_MACRO_NAME, icon: TOKEN_NAME_VISIBILITY_MACRO_ICON, command: `game.pf2eAwesomeMacros.updateTokenNameDisplay();` },
-    { name: QUICK_WHISPER_MACRO_NAME, icon: QUICK_WHISPER_MACRO_ICON, command: `game.pf2eAwesomeMacros.quickWhisperPlayer();` }
+    { name: QUICK_WHISPER_MACRO_NAME, icon: QUICK_WHISPER_MACRO_ICON, command: `game.pf2eAwesomeMacros.quickWhisperPlayer();` },
+    { name: WEIGHTED_DICE_ROLL_MACRO_NAME, icon: WEIGHTED_DICE_ROLL_MACRO_ICON, command: `game.pf2eAwesomeMacros.openWeightedDiceRollDialog();` }
 ];
 
 
@@ -134,6 +136,9 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.generateEncounterLoot = generateEncounterLoot;
     game.pf2eAwesomeMacros.updateTokenNameDisplay = updateTokenNameDisplay;
     game.pf2eAwesomeMacros.quickWhisperPlayer = quickWhisperPlayer;
+    game.pf2eAwesomeMacros.openWeightedDiceRollDialog = openWeightedDiceRollDialog;
+
+    registerWeightedDiceRollHooks();
 
     if (game.user.isGM) {
         const currentVersion = game.modules.get(MODULE_ID)?.version || "1.0.0";
