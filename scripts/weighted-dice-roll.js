@@ -5,7 +5,7 @@
  */
 
 export const WEIGHTED_DICE_ROLL_MACRO_NAME = "Weighted Dice Roll";
-export const WEIGHTED_DICE_ROLL_MACRO_ICON = "icons/svg/target.svg";
+export const WEIGHTED_DICE_ROLL_MACRO_ICON = "icons/tools/navigation/compass-worn-copper.webp";
 
 const MODULE_ID = "pf2e-awesome-macros-for-gms";
 const PREFS_STORAGE_KEY = "pf2e-awesome-macros.weightedDiceRollPrefs";
