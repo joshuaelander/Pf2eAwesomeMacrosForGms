@@ -277,6 +277,9 @@ function loadPreferences() {
         useOtherPacks: false,
         artMode: "auto",
         addFlavorAndLore: true,
+        addExtraSkills: false,
+        addThematicActions: false,
+        addTypeDefenses: false,
         useFolder: true,
         placeToken: false,
         openSheet: true
@@ -823,6 +826,695 @@ function computeLoreModifier(baseActor, level) {
     return Math.max(2, Math.round(5 + safeLevel + Math.floor(safeLevel / 3)));
 }
 
+// --- CHARACTERISTIC-BASED EXTRA SKILLS, ACTIONS, PASSIVES & DEFENSES ---
+
+const PF2E_LEVEL_DCS = {
+    "-1": 13, 0: 14, 1: 15, 2: 16, 3: 18, 4: 19, 5: 20, 6: 22,
+    7: 23, 8: 24, 9: 26, 10: 27, 11: 28, 12: 30, 13: 31, 14: 32,
+    15: 34, 16: 35, 17: 36, 18: 38, 19: 39, 20: 40, 21: 42,
+    22: 44, 23: 46, 24: 48
+};
+
+/**
+ * Returns the standard PF2e level-based DC for a creature's level.
+ * @param {number} level
+ * @returns {number}
+ */
+function computeLevelDC(level) {
+    const clamped = Math.max(-1, Math.min(24, Math.round(Number(level) || 0)));
+    return PF2E_LEVEL_DCS[clamped] ?? Math.round(14 + clamped * 1.4);
+}
+
+/**
+ * Returns a level-scaled PF2e damage dice formula for minor/moderate bonus abilities.
+ * @param {number} level
+ * @param {"minor"|"moderate"} tier
+ * @returns {string}
+ */
+function computeScaledDice(level, tier = "minor") {
+    const lv = Math.max(0, Number(level) || 0);
+    if (tier === "moderate") {
+        const count = Math.max(1, Math.min(8, Math.floor(lv / 3) + 1));
+        return `${count}d6`;
+    }
+    const count = Math.max(1, Math.min(5, Math.floor(lv / 5) + 1));
+    return `${count}d6`;
+}
+
+/**
+ * Inspects an NPC's name, traits, attacks, damage types, spells, and skills to detect themes.
+ * @param {Actor} baseActor
+ * @param {string} roleKey
+ * @param {string} keyword
+ * @returns {string[]} Ordered list of matched theme keys (most specific first)
+ */
+function analyzeNpcCharacteristics(baseActor, roleKey, keyword) {
+    const themes = [];
+    const addTheme = (key) => {
+        if (key && !themes.includes(key)) themes.push(key);
+    };
+
+    const nameLower = String(baseActor.name || "").toLowerCase();
+    const kwLower = String(keyword || "").toLowerCase();
+    const combinedText = `${nameLower} ${kwLower}`;
+    const traits = (baseActor.system?.traits?.value ?? []).map((t) => String(t).toLowerCase());
+
+    // Inspect attacks (weapons, ranged vs melee, damage types)
+    const attackItems = (baseActor.items ?? []).filter((i) => i.type === "melee");
+    const attackNames = attackItems.map((i) => String(i.name || "").toLowerCase());
+    const attackTraits = attackItems.flatMap((i) => (i.system?.traits?.value ?? []).map((t) => String(t).toLowerCase()));
+    const attackDamageTypes = [];
+    for (const atk of attackItems) {
+        for (const roll of Object.values(atk.system?.damageRolls ?? {})) {
+            if (roll?.damageType) attackDamageTypes.push(String(roll.damageType).toLowerCase());
+        }
+    }
+
+    const hasBowOrRanged =
+        roleKey === "ranger" ||
+        attackNames.some((n) => /\b(bow|longbow|shortbow|crossbow|sling|blowgun|javelin|dart)\b/.test(n)) ||
+        attackTraits.some((t) => t.startsWith("range-increment") || t === "ranged") ||
+        /\b(ranger|archer|hunter|sniper|scout|marksman|bowman|trapper)\b/.test(combinedText);
+
+    const sysSkills = baseActor.system?.skills ?? {};
+    const stealthMod = Number(sysSkills.stealth?.base ?? sysSkills.stealth?.value ?? 0);
+    const thieveryMod = Number(sysSkills.thievery?.base ?? sysSkills.thievery?.value ?? 0);
+    const hasShadowOrStealth =
+        roleKey === "rogue" ||
+        traits.includes("shadow") ||
+        traits.includes("darkness") ||
+        /\b(shadow|assassin|thief|rogue|bandit|spy|stalker|ninja|cutthroat|burglar|smuggler|night|shade|drow|skulk)\b/.test(combinedText) ||
+        stealthMod >= 6 ||
+        thieveryMod >= 6;
+
+    const hasNaturalAttack = attackNames.some((n) => /\b(jaws|bite|claw|fang|talon|horn|stinger|tail|beak|tentacle|hoof|tusk)\b/.test(n));
+    const hasMartialWeapon =
+        roleKey === "fighter" ||
+        attackNames.some((n) => /\b(sword|axe|spear|halberd|glaive|hammer|mace|flail|shield|lance|pike|greatsword|warhammer|morningstar)\b/.test(n)) ||
+        /\b(guard|soldier|knight|warrior|fighter|mercenary|captain|gladiator|barbarian|berserker|veteran|watch)\b/.test(combinedText);
+
+    const spellEntries = (baseActor.items ?? []).filter((i) => i.type === "spellcastingEntry");
+    const traditions = spellEntries.map((e) => String(e.system?.tradition?.value || "").toLowerCase());
+
+    const isDivine =
+        roleKey === "cleric" ||
+        traditions.includes("divine") ||
+        traits.includes("holy") ||
+        traits.includes("celestial") ||
+        /\b(cleric|priest|acolyte|healer|paladin|champion|oracle|monk|templar|chaplain|inquisitor)\b/.test(combinedText);
+
+    const isCaster =
+        roleKey === "caster" ||
+        spellEntries.length > 0 ||
+        traits.some((t) => ["arcane", "occult", "primal"].includes(t)) ||
+        /\b(wizard|mage|sorcerer|witch|druid|bard|alchemist|arcanist|necromancer|scholar|sage|enchanter)\b/.test(combinedText);
+
+    const isSocial =
+        roleKey === "civilian" ||
+        /\b(merchant|noble|commoner|barkeep|bartender|innkeeper|artisan|diplomat|courtier|entertainer|smith|apothecary|barrister|judge)\b/.test(combinedText);
+
+    // Specific elemental / creature-type themes first
+    if (traits.includes("fire") || attackDamageTypes.includes("fire") || /\b(fire|flame|pyro|cinder|ember)\b/.test(combinedText)) addTheme("fire");
+    if (traits.includes("cold") || attackDamageTypes.includes("cold") || /\b(frost|ice|cold|winter|rime)\b/.test(combinedText)) addTheme("cold");
+    if (traits.includes("electricity") || attackDamageTypes.includes("electricity") || /\b(storm|lightning|spark|thunder)\b/.test(combinedText)) addTheme("electricity");
+    if (traits.includes("acid") || attackDamageTypes.includes("acid") || /\b(acid|ooze|caustic)\b/.test(combinedText)) addTheme("acid");
+    if (traits.includes("poison") || attackDamageTypes.includes("poison") || /\b(venom|poison|viper|spider|assassin)\b/.test(combinedText)) addTheme("poison");
+    if (traits.includes("undead") || attackDamageTypes.includes("void")) addTheme("undead");
+    if (traits.includes("fey")) addTheme("fey");
+    if (traits.includes("fiend")) addTheme("fiend");
+    if (traits.includes("celestial")) addTheme("celestial");
+    if (traits.includes("construct")) addTheme("construct");
+    if (traits.includes("plant")) addTheme("plant");
+    if (traits.includes("dragon")) addTheme("dragon");
+
+    // Combat style & role themes
+    if (hasShadowOrStealth) addTheme("stealth-shadow");
+    if (hasBowOrRanged) addTheme("ranged-bow");
+    if (isDivine) addTheme("divine-healer");
+    if (isCaster) addTheme("spellcaster");
+    if (hasMartialWeapon) addTheme("martial-melee");
+    if (traits.includes("beast") || traits.includes("animal") || hasNaturalAttack) addTheme("beast-predator");
+    if (isSocial) addTheme("social-civilian");
+
+    if (themes.length === 0) {
+        addTheme("humanoid");
+    }
+
+    return themes;
+}
+
+const THEME_EXTRA_SKILLS = {
+    "stealth-shadow": ["stealth", "thievery", "deception", "acrobatics", "occultism"],
+    "ranged-bow": ["stealth", "survival", "acrobatics", "nature", "athletics"],
+    "martial-melee": ["athletics", "intimidation", "acrobatics", "society"],
+    "divine-healer": ["religion", "medicine", "diplomacy", "intimidation"],
+    "spellcaster": ["arcana", "occultism", "nature", "crafting", "society"],
+    "social-civilian": ["diplomacy", "deception", "society", "performance", "crafting"],
+    "beast-predator": ["athletics", "stealth", "survival", "acrobatics", "intimidation"],
+    fire: ["intimidation", "acrobatics", "athletics"],
+    cold: ["survival", "stealth", "athletics"],
+    electricity: ["acrobatics", "stealth", "intimidation"],
+    acid: ["crafting", "stealth", "athletics"],
+    poison: ["stealth", "nature", "medicine", "thievery"],
+    undead: ["intimidation", "stealth", "religion", "occultism"],
+    fey: ["deception", "nature", "performance", "stealth"],
+    fiend: ["intimidation", "deception", "religion", "arcana"],
+    celestial: ["diplomacy", "religion", "medicine", "intimidation"],
+    construct: ["athletics", "crafting", "intimidation"],
+    plant: ["nature", "stealth", "survival", "athletics"],
+    dragon: ["intimidation", "arcana", "athletics", "diplomacy"],
+    humanoid: ["diplomacy", "athletics", "stealth", "survival", "society"]
+};
+
+const THEME_BONUS_LORES = {
+    "stealth-shadow": "Shadow Lore",
+    "ranged-bow": "Archery Lore",
+    "martial-melee": "Tactics Lore",
+    "divine-healer": "Theology Lore",
+    "spellcaster": "Esoteric Lore",
+    "social-civilian": "Mercantile Lore",
+    "beast-predator": "Hunting Lore",
+    undead: "Necromancy Lore",
+    fey: "First World Lore",
+    dragon: "Draconic Lore"
+};
+
+/**
+ * Adds 1-2 missing characteristic-matched standard PF2e skills (and a niche Lore if applicable).
+ * @param {object} actorData
+ * @param {Actor} baseActor
+ * @param {number} baseLevel
+ * @param {string[]} themes
+ * @returns {string[]} Human-readable list of added skills
+ */
+function applyExtraThematicSkills(actorData, baseActor, baseLevel, themes) {
+    actorData.system = actorData.system || {};
+    actorData.system.skills = actorData.system.skills || {};
+
+    const candidateSlugs = [];
+    for (const theme of themes) {
+        for (const slug of THEME_EXTRA_SKILLS[theme] ?? []) {
+            if (!candidateSlugs.includes(slug)) candidateSlugs.push(slug);
+        }
+    }
+
+    const missingSlugs = candidateSlugs.filter((slug) => {
+        const existing = actorData.system.skills[slug];
+        const baseVal = Number(existing?.base ?? existing?.value ?? 0);
+        return !Number.isFinite(baseVal) || baseVal === 0;
+    });
+
+    const added = [];
+    const baseMod = computeLoreModifier(baseActor, baseLevel);
+    const toAddCount = Math.min(2, missingSlugs.length);
+
+    // Shuffle missing candidates slightly while keeping primary theme priority
+    const pool = missingSlugs.slice(0, Math.min(5, missingSlugs.length));
+    for (let i = 0; i < toAddCount && pool.length > 0; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const slug = pool.splice(idx, 1)[0];
+        const skillMod = Math.max(2, baseMod - i);
+        actorData.system.skills[slug] = { base: skillMod };
+        const label = slug.charAt(0).toUpperCase() + slug.slice(1);
+        added.push(`${label} +${skillMod}`);
+    }
+
+    // Add a thematic Lore if a primary theme defines one and it doesn't exist yet
+    for (const theme of themes) {
+        const loreName = THEME_BONUS_LORES[theme];
+        if (!loreName) continue;
+        const alreadyHas = (actorData.items ?? []).some(
+            (i) => i.type === "lore" && String(i.name || "").toLowerCase() === loreName.toLowerCase()
+        );
+        if (!alreadyHas) {
+            const loreMod = Math.max(2, baseMod);
+            actorData.items = actorData.items || [];
+            actorData.items.push({
+                name: loreName,
+                type: "lore",
+                system: { mod: { value: loreMod } }
+            });
+            added.push(`${loreName} +${loreMod}`);
+            break;
+        }
+    }
+
+    return added;
+}
+
+/**
+ * Returns themed PF2e action/reaction/passive blueprints scaled to the NPC's level.
+ * @param {string} theme
+ * @param {number} level
+ * @returns {Array<object>}
+ */
+let conditionIndexPromise = null;
+
+/**
+ * Loads and caches the PF2e conditionitems compendium index for real @UUID condition links.
+ * @returns {Promise<Map<string, string>>} Map of lowercase condition name -> Compendium UUID
+ */
+async function getConditionUuidMap() {
+    if (conditionIndexPromise) return conditionIndexPromise;
+
+    conditionIndexPromise = (async () => {
+        const map = new Map();
+        const pack = game.packs.get("pf2e.conditionitems");
+        if (!pack) return map;
+        try {
+            const index = await pack.getIndex();
+            for (const entry of index) {
+                if (!entry?.name) continue;
+                const uuid = entry.uuid || `Compendium.pf2e.conditionitems.Item.${entry._id}`;
+                map.set(entry.name.toLowerCase(), uuid);
+            }
+        } catch {
+            // Fall back to plain bold condition names
+        }
+        return map;
+    })();
+
+    return conditionIndexPromise;
+}
+
+/**
+ * Formats a PF2e condition as a real clickable/draggable @UUID link (or bold text fallback).
+ * @param {Map<string, string>} condUuidMap
+ * @param {string} condName Display name (e.g. "Concealed", "Off-Guard", "Frightened")
+ * @param {number|null} value Optional rank value
+ * @returns {string}
+ */
+function formatConditionLink(condUuidMap, condName, value = null) {
+    const label = value !== null && value !== undefined ? `${condName} ${value}` : condName;
+    const uuid = condUuidMap?.get(condName.toLowerCase());
+    if (uuid) {
+        return `@UUID[${uuid}]{${label}}`;
+    }
+    return `<strong>${label.toLowerCase()}</strong>`;
+}
+
+/**
+ * Returns themed PF2e action/reaction/passive blueprints scaled to the NPC's level.
+ * @param {string} theme
+ * @param {number} level
+ * @param {Map<string, string>} condUuidMap
+ * @returns {Array<object>}
+ */
+function getThemeActionBlueprints(theme, level, condUuidMap) {
+    const dc = computeLevelDC(level);
+    const minorDice = computeScaledDice(level, "minor");
+    const modDice = computeScaledDice(level, "moderate");
+    const tempHp = Math.max(4, Math.round(Math.max(0, level) * 2 + 4));
+    const cond = (name, val = null) => formatConditionLink(condUuidMap, name, val);
+
+    const catalog = {
+        "stealth-shadow": [
+            {
+                name: "Shadow Slip",
+                actionType: "action",
+                actions: 1,
+                category: "defensive",
+                traits: ["shadow"],
+                description: `<p>While in dim light, darkness, or adjacent to cover, the creature Strides up to half its Speed and attempts to Hide. It becomes ${cond("Concealed")} until the start of its next turn.</p>`
+            },
+            {
+                name: "Gloom Ambush",
+                actionType: "passive",
+                actions: null,
+                category: "offensive",
+                traits: ["shadow"],
+                description: `<p>The creature's Strikes deal an extra @Damage[${minorDice}[precision]] damage to ${cond("Off-Guard")} targets. Once per round on a hit against an off-guard foe, the target must succeed at a @Check[fortitude|dc:${dc}] save or become ${cond("Dazzled")} until the end of its next turn.</p>`
+            },
+            {
+                name: "Smoke Veil Escape",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: ["shadow"],
+                description: `<p><strong>Trigger</strong> The creature takes damage from a melee Strike. <strong>Effect</strong> It releases a brief puff of dark smoke, Stepping 5 feet away and becoming ${cond("Concealed")} until the start of its next turn.</p>`
+            }
+        ],
+        "ranged-bow": [
+            {
+                name: "Pinning Shot",
+                actionType: "action",
+                actions: 2,
+                category: "offensive",
+                traits: [],
+                description: `<p>The creature makes a ranged Strike. On a hit, the target takes normal damage and must attempt a @Check[reflex|dc:${dc}] save or become ${cond("Immobilized")} (Escape DC ${dc}) as the projectile pins its clothing or limb.</p>`
+            },
+            {
+                name: "Skirmisher's Volley",
+                actionType: "action",
+                actions: 2,
+                category: "offensive",
+                traits: [],
+                description: `<p>The creature makes two ranged Strikes against two different targets within its first range increment. Both attacks count toward multiple attack penalty, but the penalty doesn't increase until after both Strikes.</p>`
+            },
+            {
+                name: "Keen-Eyed Marksman",
+                actionType: "passive",
+                actions: null,
+                category: "offensive",
+                traits: [],
+                description: `<p>The creature's ranged Strikes ignore the ${cond("Concealed")} condition from dim light or foliage and reduce a target's circumstance bonus from lesser or standard cover by 1.</p>`
+            }
+        ],
+        "martial-melee": [
+            {
+                name: "Crushing Blow",
+                actionType: "action",
+                actions: 2,
+                category: "offensive",
+                traits: [],
+                description: `<p>The creature makes a melee Strike. On a hit, it deals an extra @Damage[${minorDice}[bludgeoning]] damage and the target must succeed at a @Check[fortitude|dc:${dc}] save or be knocked ${cond("Prone")}.</p>`
+            },
+            {
+                name: "Press the Advantage",
+                actionType: "reaction",
+                actions: null,
+                category: "offensive",
+                traits: [],
+                description: `<p><strong>Trigger</strong> An adjacent enemy critically misses the creature with a melee Strike. <strong>Effect</strong> The creature makes a melee Strike against the triggering enemy.</p>`
+            },
+            {
+                name: "Bracing Guard",
+                actionType: "action",
+                actions: 1,
+                category: "defensive",
+                traits: [],
+                description: `<p>The creature plants its feet and raises its guard, gaining a +1 circumstance bonus to AC and to its Fortitude DC against Shove and Trip until the start of its next turn.</p>`
+            }
+        ],
+        "divine-healer": [
+            {
+                name: "Mending Prayer",
+                actionType: "action",
+                actions: 2,
+                category: "defensive",
+                traits: ["divine", "healing"],
+                description: `<p><strong>Frequency</strong> once per encounter. The creature touches itself or an adjacent ally, restoring @Damage[${modDice}[healing]] Hit Points and granting a +1 status bonus to saving throws until the start of the creature's next turn.</p>`
+            },
+            {
+                name: "Sanctified Rebuke",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: ["divine"],
+                description: `<p><strong>Trigger</strong> An enemy within 15 feet damages an ally. <strong>Effect</strong> The triggering enemy must attempt a @Check[will|dc:${dc}] save or become ${cond("Enfeebled", 1)} until the end of its next turn.</p>`
+            },
+            {
+                name: "Zealous Resolve",
+                actionType: "passive",
+                actions: null,
+                category: "defensive",
+                traits: ["divine"],
+                description: `<p>Once per encounter, when reduced to half its maximum Hit Points or fewer, the creature gains ${tempHp} temporary Hit Points for 1 minute.</p>`
+            }
+        ],
+        spellcaster: [
+            {
+                name: "Arcane Ward",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: ["magical"],
+                description: `<p><strong>Frequency</strong> once per minute. <strong>Trigger</strong> The creature is targeted by an attack or spell. <strong>Effect</strong> It conjures a shimmering barrier, gaining a +2 circumstance bonus to AC or its Reflex save against the triggering effect.</p>`
+            },
+            {
+                name: "Volatile Surge",
+                actionType: "action",
+                actions: 1,
+                category: "offensive",
+                traits: ["concentrate", "magical"],
+                description: `<p>The creature channels unstable energy into its next offensive spell or Strike this turn, adding @Damage[${minorDice}[force]] damage on a hit or failed save.</p>`
+            }
+        ],
+        "social-civilian": [
+            {
+                name: "Silver-Tongued Deflection",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: ["auditory", "linguistic"],
+                description: `<p><strong>Trigger</strong> A creature targets this NPC with an attack or Intimidation check. <strong>Effect</strong> The NPC offers a sharp distraction or plea; the attacker must succeed at a @Check[will|dc:${dc}] save or take a -1 circumstance penalty to the triggering check.</p>`
+            },
+            {
+                name: "Appraiser's Eye",
+                actionType: "passive",
+                actions: null,
+                category: "interaction",
+                traits: [],
+                description: `<p>The NPC automatically spots obvious forgeries and estimates the value of mundane gear on sight, gaining a +2 circumstance bonus to Perception checks to Sense Motive.</p>`
+            }
+        ],
+        "beast-predator": [
+            {
+                name: "Pouncing Lunge",
+                actionType: "action",
+                actions: 2,
+                category: "offensive",
+                traits: [],
+                description: `<p>The creature Strides up to its Speed and makes a melee Strike. If it moved at least 10 feet, the target is ${cond("Off-Guard")} against this Strike.</p>`
+            },
+            {
+                name: "Predator's Instinct",
+                actionType: "passive",
+                actions: null,
+                category: "defensive",
+                traits: [],
+                description: `<p>The creature cannot be flanked by creatures of equal or lower level unless those creatures are ${cond("Hidden")} or ${cond("Undetected")}.</p>`
+            }
+        ],
+        fire: [
+            {
+                name: "Cinder Burst",
+                actionType: "action",
+                actions: 2,
+                category: "offensive",
+                traits: ["fire"],
+                description: `<p><strong>Frequency</strong> once per encounter. A burst of embers erupts in a 10-foot emanation, dealing @Damage[${modDice}[fire]] damage (@Check[reflex|dc:${dc}|basic:true] save).</p>`
+            }
+        ],
+        cold: [
+            {
+                name: "Rime Chill",
+                actionType: "passive",
+                actions: null,
+                category: "defensive",
+                traits: ["cold"],
+                description: `<p>Creatures that begin their turn adjacent to this creature must succeed at a @Check[fortitude|dc:${dc}] save or take a -5-foot status penalty to Speed until the end of their turn.</p>`
+            }
+        ],
+        electricity: [
+            {
+                name: "Static Arc",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: ["electricity"],
+                description: `<p><strong>Trigger</strong> A creature hits this creature with a melee Strike using a metal weapon or unarmed attack. <strong>Effect</strong> The attacker takes @Damage[${minorDice}[electricity]] damage (@Check[reflex|dc:${dc}|basic:true] save).</p>`
+            }
+        ],
+        poison: [
+            {
+                name: "Venomous Coating",
+                actionType: "action",
+                actions: 1,
+                category: "offensive",
+                traits: ["poison"],
+                description: `<p>The creature coats its next Strike this turn with toxin. On a hit, the target must succeed at a @Check[fortitude|dc:${dc}] save or take @Damage[${minorDice}[poison,persistent]] damage.</p>`
+            }
+        ],
+        undead: [
+            {
+                name: "Chilling Dread",
+                actionType: "action",
+                actions: 1,
+                category: "offensive",
+                traits: ["emotion", "fear", "mental"],
+                description: `<p>One living creature within 30 feet must attempt a @Check[will|dc:${dc}] save or become ${cond("Frightened", 1)} (${cond("Frightened", 2)} on a critical failure). The target is then temporarily immune for 1 minute.</p>`
+            }
+        ],
+        fey: [
+            {
+                name: "Fey Blink",
+                actionType: "action",
+                actions: 1,
+                category: "defensive",
+                traits: ["primal", "teleportation"],
+                description: `<p><strong>Frequency</strong> once per encounter. The creature vanishes in a shimmer of leaves or starlight and teleports up to 15 feet to an unoccupied space it can see.</p>`
+            }
+        ],
+        construct: [
+            {
+                name: "Reinforced Plating",
+                actionType: "passive",
+                actions: null,
+                category: "defensive",
+                traits: [],
+                description: `<p>The construct's layered plates cushion vital joints, reducing extra damage from critical hits by ${Math.max(2, Math.round(Math.max(1, level)))}.</p>`
+            }
+        ],
+        plant: [
+            {
+                name: "Grasping Roots",
+                actionType: "action",
+                actions: 1,
+                category: "offensive",
+                traits: ["plant"],
+                description: `<p>Roots and vines erupt in a 10-foot burst within 30 feet, turning the area into difficult terrain until the start of the creature's next turn.</p>`
+            }
+        ],
+        humanoid: [
+            {
+                name: "Quick Improvisation",
+                actionType: "reaction",
+                actions: null,
+                category: "defensive",
+                traits: [],
+                description: `<p><strong>Frequency</strong> once per encounter. <strong>Trigger</strong> The NPC fails a Reflex or Will saving throw. <strong>Effect</strong> It gains a +1 circumstance bonus to the triggering save.</p>`
+            }
+        ]
+    };
+
+    return catalog[theme] ?? [];
+}
+
+/**
+ * Adds 1-2 characteristic-matched PF2e action/reaction/passive items to the NPC.
+ * @param {object} actorData
+ * @param {number} baseLevel
+ * @param {string[]} themes
+ * @returns {Promise<string[]>} Names of added abilities
+ */
+async function applyThematicActionsAndPassives(actorData, baseLevel, themes) {
+    actorData.items = actorData.items || [];
+    const existingNames = new Set(actorData.items.map((i) => String(i.name || "").toLowerCase()));
+    const condUuidMap = await getConditionUuidMap();
+
+    const pool = [];
+    for (const theme of themes) {
+        for (const bp of getThemeActionBlueprints(theme, baseLevel, condUuidMap)) {
+            if (!existingNames.has(bp.name.toLowerCase()) && !pool.some((p) => p.name === bp.name)) {
+                pool.push(bp);
+            }
+        }
+    }
+
+    if (pool.length === 0) return [];
+
+    const addedLabels = [];
+    const count = Math.min(2, pool.length);
+    // Prioritize first matched theme for #1, then vary across remaining pool for #2
+    const chosen = [];
+    chosen.push(pool.shift());
+    if (count > 1 && pool.length > 0) {
+        chosen.push(pickRandom(pool));
+    }
+
+    for (const bp of chosen) {
+        if (!bp) continue;
+        actorData.items.push({
+            name: bp.name,
+            type: "action",
+            system: {
+                description: { value: bp.description },
+                actionType: { value: bp.actionType },
+                actions: { value: bp.actions },
+                category: bp.category,
+                traits: { value: bp.traits }
+            }
+        });
+        const costTag = bp.actionType === "action"
+            ? `${bp.actions}A`
+            : bp.actionType === "reaction"
+                ? "Reaction"
+                : "Passive";
+        addedLabels.push(`${bp.name} (${costTag})`);
+    }
+
+    return addedLabels;
+}
+
+const THEME_DEFENSE_OPTIONS = {
+    fire: [{ kind: "resistance", type: "fire" }, { kind: "immunity", type: "fire", minLevel: 7 }],
+    cold: [{ kind: "resistance", type: "cold" }, { kind: "immunity", type: "cold", minLevel: 7 }],
+    electricity: [{ kind: "resistance", type: "electricity" }, { kind: "immunity", type: "electricity", minLevel: 7 }],
+    acid: [{ kind: "resistance", type: "acid" }, { kind: "immunity", type: "acid", minLevel: 7 }],
+    poison: [{ kind: "resistance", type: "poison" }, { kind: "immunity", type: "poison", minLevel: 6 }],
+    "stealth-shadow": [{ kind: "resistance", type: "void" }, { kind: "resistance", type: "cold" }, { kind: "resistance", type: "mental" }],
+    undead: [{ kind: "immunity", type: "bleed" }, { kind: "immunity", type: "poison" }, { kind: "resistance", type: "void" }, { kind: "resistance", type: "cold" }],
+    construct: [{ kind: "immunity", type: "bleed" }, { kind: "immunity", type: "poison" }, { kind: "resistance", type: "physical", exceptions: ["adamantine"] }],
+    fey: [{ kind: "resistance", type: "mental" }, { kind: "resistance", type: "cold" }, { kind: "resistance", type: "physical", exceptions: ["cold-iron"] }],
+    fiend: [{ kind: "resistance", type: "fire" }, { kind: "resistance", type: "poison" }],
+    celestial: [{ kind: "resistance", type: "fire" }, { kind: "resistance", type: "vitality" }, { kind: "resistance", type: "mental" }],
+    plant: [{ kind: "resistance", type: "poison" }, { kind: "resistance", type: "bludgeoning" }, { kind: "resistance", type: "piercing" }],
+    dragon: [{ kind: "resistance", type: "fire" }, { kind: "resistance", type: "cold" }, { kind: "resistance", type: "acid" }, { kind: "resistance", type: "electricity" }],
+    "beast-predator": [{ kind: "resistance", type: "cold" }, { kind: "resistance", type: "poison" }, { kind: "resistance", type: "bludgeoning" }],
+    "martial-melee": [{ kind: "resistance", type: "bludgeoning" }, { kind: "resistance", type: "slashing" }, { kind: "resistance", type: "piercing" }],
+    "ranged-bow": [{ kind: "resistance", type: "piercing" }, { kind: "resistance", type: "cold" }, { kind: "resistance", type: "poison" }],
+    "divine-healer": [{ kind: "resistance", type: "void" }, { kind: "resistance", type: "mental" }, { kind: "immunity", type: "disease", minLevel: 4 }],
+    spellcaster: [{ kind: "resistance", type: "force" }, { kind: "resistance", type: "mental" }, { kind: "resistance", type: "fire" }],
+    "social-civilian": [{ kind: "resistance", type: "mental" }, { kind: "resistance", type: "poison" }],
+    humanoid: [{ kind: "resistance", type: "mental" }, { kind: "resistance", type: "poison" }]
+};
+
+/**
+ * Adds 1 type- or characteristic-appropriate resistance or immunity to the NPC.
+ * @param {object} actorData
+ * @param {number} baseLevel
+ * @param {string[]} themes
+ * @returns {string} Human-readable summary of added defense (or empty string)
+ */
+function applyTypeResistancesOrImmunities(actorData, baseLevel, themes) {
+    actorData.system = actorData.system || {};
+    actorData.system.attributes = actorData.system.attributes || {};
+    const resistances = Array.isArray(actorData.system.attributes.resistances)
+        ? actorData.system.attributes.resistances
+        : (actorData.system.attributes.resistances = []);
+    const immunities = Array.isArray(actorData.system.attributes.immunities)
+        ? actorData.system.attributes.immunities
+        : (actorData.system.attributes.immunities = []);
+
+    const existingTypes = new Set([
+        ...resistances.map((r) => String(r?.type || "").toLowerCase()),
+        ...immunities.map((i) => String(i?.type || "").toLowerCase())
+    ]);
+
+    const candidates = [];
+    for (const theme of themes) {
+        for (const opt of THEME_DEFENSE_OPTIONS[theme] ?? []) {
+            if (opt.minLevel !== undefined && baseLevel < opt.minLevel) continue;
+            if (existingTypes.has(opt.type)) continue;
+            if (!candidates.some((c) => c.kind === opt.kind && c.type === opt.type)) {
+                candidates.push(opt);
+            }
+        }
+    }
+
+    const picked = pickRandom(candidates.slice(0, 4));
+    if (!picked) return "";
+
+    if (picked.kind === "immunity") {
+        immunities.push({
+            type: picked.type,
+            exceptions: picked.exceptions ?? []
+        });
+        return `Immunity: ${picked.type}`;
+    }
+
+    const resValue = Math.max(2, Math.min(15, Math.round(2 + Math.max(0, baseLevel) * 0.75)));
+    resistances.push({
+        type: picked.type,
+        value: resValue,
+        exceptions: picked.exceptions ?? [],
+        doubleVs: []
+    });
+    const exNote = picked.exceptions?.length ? ` (except ${picked.exceptions.join(", ")})` : "";
+    return `Resistance: ${picked.type} ${resValue}${exNote}`;
+}
+
 /**
  * Gets or creates the "Generated NPCs" Actor folder.
  * @returns {Promise<Folder|null>}
@@ -963,6 +1655,18 @@ async function executeNpcGeneration(options) {
         }
     }
 
+    // Optional characteristic-matched extras (skills, actions/passives, resistances/immunities)
+    const detectedThemes = analyzeNpcCharacteristics(baseActor, options.role, options.keyword);
+    const addedExtraSkills = options.addExtraSkills
+        ? applyExtraThematicSkills(actorData, baseActor, baseLevel, detectedThemes)
+        : [];
+    const addedActions = options.addThematicActions
+        ? await applyThematicActionsAndPassives(actorData, baseLevel, detectedThemes)
+        : [];
+    const addedDefense = options.addTypeDefenses
+        ? applyTypeResistancesOrImmunities(actorData, baseLevel, detectedThemes)
+        : "";
+
     // Optional RP personality + relevant bonus Lore skill
     let personality = "";
     let mannerism = "";
@@ -991,15 +1695,27 @@ async function executeNpcGeneration(options) {
             });
             addedLoreText = `${roleLoreName} +${loreMod}`;
         }
+    }
 
+    const hasProfileExtras = Boolean(
+        options.addFlavorAndLore ||
+        addedExtraSkills.length > 0 ||
+        addedActions.length > 0 ||
+        addedDefense
+    );
+
+    if (hasProfileExtras) {
         const flavorBlock = `
             <hr />
             <h3>Generated NPC Profile</h3>
             <p><strong>Base Statblock:</strong> ${escapeHtml(baseActor.name)} (Level ${baseLevel} · ${escapeHtml(picked.pack.metadata?.label || picked.pack.collection)})</p>
-            <p><strong>Personality:</strong> ${escapeHtml(personality)}</p>
-            <p><strong>Mannerism:</strong> ${escapeHtml(mannerism)}</p>
-            <p><strong>Motivation:</strong> ${escapeHtml(motivation)}</p>
-            ${addedLoreText ? `<p><strong>Added Skill:</strong> ${escapeHtml(addedLoreText)}</p>` : ""}
+            ${personality ? `<p><strong>Personality:</strong> ${escapeHtml(personality)}</p>` : ""}
+            ${mannerism ? `<p><strong>Mannerism:</strong> ${escapeHtml(mannerism)}</p>` : ""}
+            ${motivation ? `<p><strong>Motivation:</strong> ${escapeHtml(motivation)}</p>` : ""}
+            ${addedLoreText ? `<p><strong>Added Role Lore:</strong> ${escapeHtml(addedLoreText)}</p>` : ""}
+            ${addedExtraSkills.length > 0 ? `<p><strong>Added Extra Skills:</strong> ${escapeHtml(addedExtraSkills.join(", "))}</p>` : ""}
+            ${addedActions.length > 0 ? `<p><strong>Added Abilities:</strong> ${escapeHtml(addedActions.join(", "))}</p>` : ""}
+            ${addedDefense ? `<p><strong>Added Defense:</strong> ${escapeHtml(addedDefense)}</p>` : ""}
         `;
 
         actorData.system = actorData.system || {};
@@ -1075,6 +1791,9 @@ async function executeNpcGeneration(options) {
             <div style="font-size: 0.86em; line-height: 1.45;">
                 <div><strong>Disposition:</strong> ${escapeHtml(options.disposition.charAt(0).toUpperCase() + options.disposition.slice(1))}${traitsDisplay ? ` · <strong>Traits:</strong> ${escapeHtml(traitsDisplay)}` : ""}</div>
                 <div><strong>Key Skills:</strong> ${skillSummary}</div>
+                ${addedExtraSkills.length > 0 ? `<div><strong>Bonus Skills:</strong> ${escapeHtml(addedExtraSkills.join(", "))}</div>` : ""}
+                ${addedActions.length > 0 ? `<div><strong>Bonus Abilities:</strong> ${escapeHtml(addedActions.join(", "))}</div>` : ""}
+                ${addedDefense ? `<div><strong>Bonus Defense:</strong> ${escapeHtml(addedDefense)}</div>` : ""}
                 ${personality ? `<div><strong>Personality:</strong> ${escapeHtml(personality)}</div>` : ""}
                 ${mannerism ? `<div><strong>Mannerism:</strong> ${escapeHtml(mannerism)}</div>` : ""}
                 ${motivation ? `<div><strong>Motivation:</strong> ${escapeHtml(motivation)}</div>` : ""}
@@ -1219,6 +1938,18 @@ export async function openRandomNpcDialog() {
                         <input type="checkbox" id="rng-npc-flavor" ${prefs.addFlavorAndLore ? "checked" : ""} />
                         Add RP flavor &amp; bonus Lore
                     </label>
+                    <label class="rng-npc-check-label" title="Adds 1–2 missing PF2e skills matched to the creature's name, weapons, or traits">
+                        <input type="checkbox" id="rng-npc-extra-skills" ${prefs.addExtraSkills ? "checked" : ""} />
+                        Add extra thematic skills
+                    </label>
+                    <label class="rng-npc-check-label" title="Adds 1–2 characteristic-matched PF2e actions, reactions, or passives (e.g. bow shots, shadow tricks)">
+                        <input type="checkbox" id="rng-npc-extra-actions" ${prefs.addThematicActions ? "checked" : ""} />
+                        Add thematic action / passive
+                    </label>
+                    <label class="rng-npc-check-label" title="Adds a level-scaled resistance or immunity matched to the creature's type or theme">
+                        <input type="checkbox" id="rng-npc-extra-defenses" ${prefs.addTypeDefenses ? "checked" : ""} />
+                        Add type resistance / immunity
+                    </label>
                     <label class="rng-npc-check-label">
                         <input type="checkbox" id="rng-npc-folder" ${prefs.useFolder ? "checked" : ""} />
                         Save in "Generated NPCs" folder
@@ -1274,6 +2005,9 @@ export async function openRandomNpcDialog() {
                             ? (root?.querySelector("#rng-npc-art-mode")?.value || "auto")
                             : "compendium",
                         addFlavorAndLore: Boolean(root?.querySelector("#rng-npc-flavor")?.checked),
+                        addExtraSkills: Boolean(root?.querySelector("#rng-npc-extra-skills")?.checked),
+                        addThematicActions: Boolean(root?.querySelector("#rng-npc-extra-actions")?.checked),
+                        addTypeDefenses: Boolean(root?.querySelector("#rng-npc-extra-defenses")?.checked),
                         useFolder: Boolean(root?.querySelector("#rng-npc-folder")?.checked),
                         placeToken: Boolean(root?.querySelector("#rng-npc-place")?.checked),
                         openSheet: Boolean(root?.querySelector("#rng-npc-open-sheet")?.checked)
