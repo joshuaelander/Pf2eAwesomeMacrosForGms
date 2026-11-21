@@ -1,6 +1,8 @@
 # Pf2e Awesome Macros For Gms
 
 Changes: \
+11/21/2026 - Version 2.2.9: Add random NPC generator and scale NPC level macros to help with creating and adjusting NPCs for encounters. \
+\
 11/21/2026 - Version 2.2.7: Fix to journal export macro to ensure that it works correctly with the latest version of Foundry VTT, updating the way it exports and preserving the sorting order. \
 \
 11/20/2026 - Version 2.2.6: Added a new macro for rolling a weighted random PC target for enemy attacks in combat. This allows GMs to have a more dynamic combat experience. \

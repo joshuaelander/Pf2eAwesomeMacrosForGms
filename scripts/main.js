@@ -32,6 +32,7 @@ import {
     SESSION_HERO_POINTS_MACRO_ICON
 } from './session-hero-points.js';
 import { openRandomNpcDialog, RANDOM_NPC_MACRO_NAME, RANDOM_NPC_MACRO_ICON } from './random-npc-generator.js';
+import { openNpcScalerDialog, registerNpcScalerHooks, NPC_LEVEL_SCALER_MACRO_NAME, NPC_LEVEL_SCALER_MACRO_ICON } from './npc-level-scaler.js';
 
 // --- 2. THE DESIRED MACRO STATE ---
 // Add any new macros to this array. The Smart Sync will handle the rest!
@@ -50,7 +51,8 @@ const DESIRED_MACROS = [
     { name: QUICK_WHISPER_MACRO_NAME, icon: QUICK_WHISPER_MACRO_ICON, command: `game.pf2eAwesomeMacros.quickWhisperPlayer();` },
     { name: WEIGHTED_DICE_ROLL_MACRO_NAME, icon: WEIGHTED_DICE_ROLL_MACRO_ICON, command: `game.pf2eAwesomeMacros.openWeightedDiceRollDialog();` },
     { name: SESSION_HERO_POINTS_MACRO_NAME, icon: SESSION_HERO_POINTS_MACRO_ICON, command: `game.pf2eAwesomeMacros.openSessionHeroPointsDialog();` },
-    { name: RANDOM_NPC_MACRO_NAME, icon: RANDOM_NPC_MACRO_ICON, command: `game.pf2eAwesomeMacros.openRandomNpcDialog();` }
+    { name: RANDOM_NPC_MACRO_NAME, icon: RANDOM_NPC_MACRO_ICON, command: `game.pf2eAwesomeMacros.openRandomNpcDialog();` },
+    { name: NPC_LEVEL_SCALER_MACRO_NAME, icon: NPC_LEVEL_SCALER_MACRO_ICON, command: `game.pf2eAwesomeMacros.openNpcScalerDialog();` }
 ];
 
 
@@ -153,9 +155,11 @@ Hooks.once('ready', async () => {
     game.pf2eAwesomeMacros.openWeightedDiceRollDialog = openWeightedDiceRollDialog;
     game.pf2eAwesomeMacros.openSessionHeroPointsDialog = openSessionHeroPointsDialog;
     game.pf2eAwesomeMacros.openRandomNpcDialog = openRandomNpcDialog;
+    game.pf2eAwesomeMacros.openNpcScalerDialog = openNpcScalerDialog;
 
     registerWeightedDiceRollHooks();
     registerSessionHeroPointsHooks();
+    registerNpcScalerHooks();
 
     if (game.user.isGM) {
         const currentVersion = game.modules.get(MODULE_ID)?.version || "1.0.0";

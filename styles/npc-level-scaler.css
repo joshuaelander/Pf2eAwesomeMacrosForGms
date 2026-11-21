@@ -1,0 +1,316 @@
+/* PF2e Awesome Macros for GMs — NPC Level Scaler (Cream Parchment Aesthetic) */
+
+.nls-window {
+    border: 1px solid #000000 !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.55) !important;
+}
+
+.nls-window .window-header {
+    background: #1c1b18 !important;
+    color: #f0f0e0 !important;
+    border-bottom: 1px solid #000000 !important;
+}
+
+.nls-window .window-header .window-title,
+.nls-window .window-header .header-control,
+.nls-window .window-header i {
+    color: #f0f0e0 !important;
+}
+
+.nls-window .window-content {
+    background: linear-gradient(180deg, #efece3 0%, #e5e1d5 100%) !important;
+    color: #191813 !important;
+}
+
+.nls-window .dialog-form,
+.nls-window .standard-form {
+    color: #191813 !important;
+}
+
+.nls-window .form-footer {
+    border-top: 1px solid #b5b3a4;
+    padding-top: 8px;
+}
+
+.nls-window .form-footer button {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+    border: 1px solid #7a7971 !important;
+    font-weight: 600;
+}
+
+.nls-window .form-footer button[data-action="apply"] {
+    background: rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #191813 !important;
+    font-weight: 700;
+}
+
+.nls-window .form-footer button:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+}
+
+.nls-dialog {
+    font-family: "Signika", sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    color: #191813;
+}
+
+.nls-dialog * {
+    box-sizing: border-box;
+}
+
+.nls-header-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
+}
+
+.nls-dialog img.nls-avatar {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px;
+    max-width: 38px;
+    max-height: 38px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #2b2a27;
+    border: 1px solid #7a7971;
+    display: block;
+}
+
+.nls-target-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.nls-target-name {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #191813;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nls-target-sub {
+    font-size: 0.78rem;
+    color: #4b4a44;
+}
+
+.nls-level-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid #b5b3a4;
+}
+
+.nls-level-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nls-dialog button.nls-step-btn {
+    width: 28px !important;
+    flex: 0 0 28px !important;
+    height: 28px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+}
+
+.nls-dialog button.nls-step-btn:hover {
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-color: #191813 !important;
+}
+
+.nls-dialog input.nls-level-input {
+    width: 54px !important;
+    flex: 0 0 54px !important;
+    height: 28px !important;
+    min-height: 0 !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    border: 1px solid #7a7971 !important;
+    background: #ffffff !important;
+    color: #191813 !important;
+}
+
+.nls-quick-pills {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nls-dialog button.nls-pill {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    height: 24px !important;
+    min-height: 0 !important;
+    padding: 0 7px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #191813 !important;
+}
+
+.nls-dialog button.nls-pill:hover {
+    background: rgba(0, 0, 0, 0.14) !important;
+    border-color: #191813 !important;
+}
+
+.nls-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 7px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
+    font-size: 0.82rem;
+}
+
+.nls-stat-cell {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid #c6c3b6;
+}
+
+.nls-stat-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #4b4a44;
+}
+
+.nls-stat-val {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #191813;
+}
+
+.nls-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 7px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
+}
+
+.nls-section-title {
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #4b4a44;
+    border-bottom: 1px solid #c6c3b6;
+    padding-bottom: 3px;
+    margin-bottom: 2px;
+}
+
+.nls-checks-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px 10px;
+}
+
+.nls-check-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.83rem;
+    color: #191813;
+    cursor: pointer;
+    margin: 0;
+}
+
+.nls-dialog input[type="checkbox"] {
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    accent-color: #4b4a44;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.nls-restore-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 9px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid #7a7971;
+    font-size: 0.82rem;
+}
+
+.nls-dialog button.nls-restore-btn {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    height: 24px !important;
+    min-height: 0 !important;
+    padding: 0 9px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #7a7971 !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+}
+
+.nls-dialog button.nls-restore-btn:hover {
+    background: rgba(0, 0, 0, 0.14) !important;
+    border-color: #191813 !important;
+}
+
+/* Header bar button injected into NPCSheetPF2e */
+.npc-scaler-header-btn {
+    cursor: pointer;
+    white-space: nowrap;
+}
