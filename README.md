@@ -16,6 +16,7 @@ Contents: \
 12.) Quick Whisper to Player - Quickly whisper a message to a player without having to type it out manually \
 13.) Weighted Dice Roll - Roll a weighted random PC target for enemy attacks in combat \
 14.) Session Hero Points - Track ephemeral session Hero Points separately from permanent Hero Points, and consume session points first \
+15.) Random NPC Generator - Generate level- and role-matched PF2e NPCs from NPC Core, NPC Gallery, Monster Core, and Bestiaries with optional Character Gallery art, names, bonus Lore, and RP notes \
 
 If you'd like you can help support me over on Patreon to see this and many other fun tools, maps, etc related to PF2e.
 Linked here: https://patreon.com/AeneasPF2e

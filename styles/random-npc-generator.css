@@ -1,0 +1,167 @@
+/* PF2e Awesome Macros for GMs — Random NPC Generator Dialog (Cream Parchment Aesthetic) */
+
+.rng-npc-window {
+    border: 1px solid #000000 !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.55) !important;
+}
+
+.rng-npc-window .window-header {
+    background: #1c1b18 !important;
+    color: #f0f0e0 !important;
+    border-bottom: 1px solid #000000 !important;
+}
+
+.rng-npc-window .window-header .window-title,
+.rng-npc-window .window-header .header-control,
+.rng-npc-window .window-header i {
+    color: #f0f0e0 !important;
+}
+
+.rng-npc-window .window-content {
+    background: linear-gradient(180deg, #efece3 0%, #e5e1d5 100%) !important;
+    color: #191813 !important;
+}
+
+.rng-npc-window .dialog-form,
+.rng-npc-window .standard-form {
+    color: #191813 !important;
+}
+
+.rng-npc-window .form-footer {
+    border-top: 1px solid #b5b3a4;
+    padding-top: 8px;
+}
+
+.rng-npc-window .form-footer button {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #191813 !important;
+    border: 1px solid #7a7971 !important;
+    font-weight: 600;
+}
+
+.rng-npc-window .form-footer button[data-action="generate"] {
+    background: rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #191813 !important;
+    font-weight: 700;
+}
+
+.rng-npc-window .form-footer button:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+}
+
+.rng-npc-dialog {
+    font-family: "Signika", sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    color: #191813;
+}
+
+.rng-npc-dialog * {
+    box-sizing: border-box;
+}
+
+.rng-npc-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.rng-npc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rng-npc-field label {
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: #191813;
+}
+
+.rng-npc-dialog input[type="number"],
+.rng-npc-dialog input[type="text"],
+.rng-npc-dialog select {
+    width: 100% !important;
+    height: 29px !important;
+    min-height: 0 !important;
+    padding: 0 8px !important;
+    border-radius: 4px;
+    border: 1px solid #7a7971 !important;
+    background: #ffffff !important;
+    color: #191813 !important;
+    font-size: 0.86rem;
+}
+
+.rng-npc-dialog input:focus,
+.rng-npc-dialog select:focus {
+    outline: none !important;
+    border-color: #191813 !important;
+}
+
+.rng-npc-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 7px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid #b5b3a4;
+}
+
+.rng-npc-section-title {
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #4b4a44;
+    border-bottom: 1px solid #c6c3b6;
+    padding-bottom: 3px;
+    margin-bottom: 2px;
+}
+
+.rng-npc-checks-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px 10px;
+}
+
+.rng-npc-check-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84rem;
+    color: #191813;
+    cursor: pointer;
+    margin: 0;
+}
+
+.rng-npc-dialog input[type="checkbox"] {
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    accent-color: #4b4a44;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rng-npc-status-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #b5b3a4;
+    background: rgba(255, 255, 255, 0.55);
+    color: #4b4a44;
+}
+
+.rng-npc-status-pill.active {
+    border-color: #4a6b48;
+    background: rgba(74, 107, 72, 0.14);
+    color: #254223;
+    font-weight: 600;
+}
