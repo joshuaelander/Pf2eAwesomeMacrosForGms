@@ -14,7 +14,8 @@
 	],
 	"styles": [
 		"styles/weighted-dice-roll.css",
-		"styles/session-hero-points.css"
+		"styles/session-hero-points.css",
+		"styles/journal-to-html-export.css"
 	],
 	"authors": [
 		{
