@@ -997,15 +997,30 @@ async function cleanPageHtml(rawHtml, context) {
 // --- FOLDER COLLECTION & EXPORT EXECUTION ---
 
 /**
+ * Sorts sibling Foundry documents (folders or journals) to match the parent folder's sorting mode.
+ * @param {Array} items
+ * @param {Folder|null} parentFolder
+ * @returns {Array}
+ */
+function sortByFoundryOrder(items, parentFolder = null) {
+    if (parentFolder?.sorting === "a") {
+        return [...items].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    }
+    return [...items].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+}
+
+/**
  * Recursively collects JournalEntry folders in display order for the dropdown.
  * @param {string|null} parentId
  * @param {number} depth
  * @returns {Array<{ folder: Folder, depth: number }>}
  */
 function collectFolderTree(parentId = null, depth = 0) {
-    const children = game.folders
-        .filter((f) => f.type === "JournalEntry" && (f.folder?.id ?? null) === parentId)
-        .sort((a, b) => (a.sort - b.sort) || a.name.localeCompare(b.name));
+    const parentFolder = parentId ? game.folders.get(parentId) : null;
+    const children = sortByFoundryOrder(
+        game.folders.filter((f) => f.type === "JournalEntry" && (f.folder?.id ?? null) === parentId),
+        parentFolder
+    );
 
     const list = [];
     for (const folder of children) {
@@ -1031,17 +1046,20 @@ async function runJournalExport(folderId, options) {
     let exportTitle = "All Journals";
 
     const collectSortedJournals = (parentId, folderPath = null) => {
-        const childJournals = allJournals
-            .filter((j) => (j.folder?.id ?? null) === parentId)
-            .sort((a, b) => (a.sort - b.sort) || a.name.localeCompare(b.name));
+        const parentFolder = parentId ? game.folders.get(parentId) : null;
+        const childJournals = sortByFoundryOrder(
+            allJournals.filter((j) => (j.folder?.id ?? null) === parentId),
+            parentFolder
+        );
 
         if (childJournals.length > 0) {
             orderedSections.push({ folderName: folderPath, journals: childJournals });
         }
 
-        const childFolders = game.folders
-            .filter((f) => f.type === "JournalEntry" && (f.folder?.id ?? null) === parentId)
-            .sort((a, b) => (a.sort - b.sort) || a.name.localeCompare(b.name));
+        const childFolders = sortByFoundryOrder(
+            game.folders.filter((f) => f.type === "JournalEntry" && (f.folder?.id ?? null) === parentId),
+            parentFolder
+        );
 
         for (const folder of childFolders) {
             const nextPath = folderPath ? `${folderPath} / ${folder.name}` : folder.name;
@@ -1085,9 +1103,10 @@ async function runJournalExport(folderId, options) {
         for (const journal of section.journals) {
             const entryName = journal.name || "Untitled Journal Entry";
             const entryId = `entry-${journal.id}`;
-            const sortedPages = Array.from(journal.pages?.values?.() ?? []).sort(
-                (a, b) => (a.sort - b.sort) || (a.name || "").localeCompare(b.name || "")
-            );
+            // Preserve Foundry's exact native journal page order (journal.pages.contents)
+            const sortedPages = Array.isArray(journal.pages?.contents)
+                ? [...journal.pages.contents]
+                : Array.from(journal.pages?.values?.() ?? []).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 
             let journalPagesHtml = "";
             let exportedPageCountForEntry = 0;
